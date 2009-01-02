@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<module id="tests" version="0.0.1" package="amplafi">
+    <service-point id="testService" interface="org.amplafi.hivemind.factory.servicessetter.FakeService">
+        <invoke-factory>
+            <construct class="org.amplafi.hivemind.factory.servicessetter.FakeServiceImpl"/>
+        </invoke-factory>
+    </service-point>    
+    <service-point id="testService2" interface="org.amplafi.hivemind.factory.servicessetter.FakeService2">
+        <invoke-factory>
+            <construct class="org.amplafi.hivemind.factory.servicessetter.FakeService2Impl"/>
+        </invoke-factory>
+    </service-point>   
+    <service-point id="TestService3" interface="org.amplafi.hivemind.factory.servicessetter.FakeService2">
+        <invoke-factory>
+            <construct class="org.amplafi.hivemind.factory.servicessetter.FakeService2Impl"/>
+        </invoke-factory>
+    </service-point>   
+</module>

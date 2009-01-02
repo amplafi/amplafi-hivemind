@@ -1,0 +1,346 @@
+<module id="amplafi.factory" version="0.2.0">
+    
+    <sub-module descriptor="amplafi.factory.facade.xml"/>
+    <service-point id="appServicesFactory" interface="org.apache.hivemind.ServiceImplementationFactory" parameters-schema-id="factorySchema">
+        A ServiceImplementationFactory that can be safely hooked with interceptors.
+        <invoke-factory>
+            <construct class="org.amplafi.hivemind.factory.AppServicesFactory">
+                <set-object property="realServiceImplementationFactory" value="service:hivemind.BuilderFactory"/>
+            </construct>
+        </invoke-factory>
+    </service-point>
+    
+    <schema id="servicelist">
+        <element name="service">
+            <attribute name="id" required="true" translator="service"/>
+            <rules>
+                <push-attribute attribute="id"/>
+                <invoke-parent method="addElement"/>
+            </rules>
+        </element>
+    </schema>
+    <schema id="classServiceMap">
+        <!-- A schema that takes a class as the key to reference a service -->
+        <element name="service" key-attribute="keyed-class">
+            <attribute name="id" required="true" translator="service"/>
+            <attribute name="keyed-class" required="true" translator="class"/>
+            <rules>
+                <push-attribute attribute="id"/>
+                <invoke-parent method="addElement"/>
+            </rules>
+        </element>
+    </schema>
+    
+    <schema id="eventListeners">
+        <element name="event-listener">
+            <attribute name="service-id" required="true" translator="service"/>
+            <rules>
+                <push-attribute attribute="service-id"/>
+                <invoke-parent method="addElement"/>
+            </rules>
+        </element>
+    </schema>
+    <!-- exact copy of parameters-schema used by hivemind.BuilderFactory -->
+    <schema id="factorySchema">
+      <element name="construct">
+        A single construct element identifies the class to instantiate.
+       
+        <attribute name="class" required="true">The name of the class to instantiate.</attribute>
+        <attribute name="messages-property">The name of a property to assign invoking module's messages to.</attribute>
+        <attribute name="log-property">The name of a property to assign the Log instance for the service to. The Log instance is built from the service configuration point id.</attribute>
+        <attribute name="service-id-property">The name of a property to assign the configuration point id of the service to.</attribute>
+        <attribute name="initialize-method">The name of a public instance method (taking no parameters) to be invoked after the service is constructed.</attribute>
+        <attribute name="error-handler-property">The name of a property to assign the module's ErrorHandler to.</attribute>
+        <attribute name="class-resolver-property">The name of a property to assign the module's ClassResolver to.</attribute>
+        <attribute name="autowire-services" translator="boolean,default=true">If true (the default), the BuilderFactory will attempt to connect unclaimed properties to services.</attribute>
+        <attribute name="error-log-property">The name of a property to assign the service's ErrorLog to.</attribute>
+        
+        <rules>
+          <create-object class="org.apache.hivemind.service.impl.BuilderParameter"/>
+          <read-attribute attribute="class" property="className"/>
+          <read-attribute attribute="initialize-method" property="initializeMethod"/>
+          <read-attribute attribute="autowire-services" property="autowireServices" skip-if-null="false"/>
+          <invoke-parent method="addElement"/>
+          
+          <create-object class="org.apache.hivemind.service.impl.BuilderMessagesFacet"/>
+          <read-attribute attribute="messages-property" property="propertyName"/>
+          <invoke-parent depth="1" method="addProperty"/>
+          
+          <create-object class="org.apache.hivemind.service.impl.BuilderLogFacet"/>
+          <read-attribute attribute="log-property" property="propertyName"/>
+          <invoke-parent depth="2" method="addProperty"/>
+          
+          <create-object class="org.apache.hivemind.service.impl.BuilderServiceIdFacet"/>
+          <read-attribute attribute="service-id-property" property="propertyName"/>
+          <invoke-parent depth="3" method="addProperty"/>
+          
+          <create-object class="org.apache.hivemind.service.impl.BuilderErrorHandlerFacet"/>
+          <read-attribute attribute="error-handler-property" property="propertyName"/>
+          <invoke-parent depth="4" method="addProperty"/>
+          
+          <create-object class="org.apache.hivemind.service.impl.BuilderClassResolverFacet"/>
+          <read-attribute attribute="class-resolver-property" property="propertyName"/>
+          <invoke-parent depth="5" method="addProperty"/>
+          
+          <create-object class="org.apache.hivemind.service.impl.BuilderErrorLogFacet"/>
+          <read-attribute attribute="error-log-property" property="propertyName"/>
+          <invoke-parent depth="6" method="addProperty"/>          
+        </rules>
+        <element name="string">
+          
+          A string value constructor parameter.
+          
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderPropertyFacet"/>
+            <set-property property="translator" value="null"/>
+            <read-content property="value"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+        
+        <element name="int">
+          
+          An integer value constructor parameter.
+          
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderPropertyFacet"/>
+            <set-property property="translator" value="int"/>
+            <read-content property="value"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+        
+        <element name="long">
+          
+          A long (64-bit) integer value constructor parameter.
+            
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderPropertyFacet"/>
+            <set-property property="translator" value="long"/>
+            <read-content property="value"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+        
+        <element name="boolean">
+          
+          A boolean value constructor parameter.
+            
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderPropertyFacet"/>
+            <set-property property="translator" value="enumeration,java.lang.Boolean,true=TRUE,false=FALSE"/>
+            <read-content property="value"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+        
+        <element name="service">
+          
+          A constructor parameter providing the identified HiveMind service.
+          
+         <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderPropertyFacet"/>
+            <set-property property="translator" value="service"/>
+            <read-content property="value"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+        
+        <element name="configuration">
+          
+          A constructor parameter providing a HiveMind configuration point (as a List).
+            
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderPropertyFacet"/>
+            <set-property property="translator" value="configuration"/>
+            <read-content property="value"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+        
+        <element name="resource">
+          
+          A Resource constructor parameter.
+            
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderPropertyFacet"/>
+            <set-property property="translator" value="resource"/>
+            <read-content property="value"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+        
+        <element name="log">
+          
+          Placeholder for a Log instance for the constructed service as constructor parameter.
+          
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderLogFacet"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+        
+        <element name="error-handler">
+          
+          Placeholder for the module's ErrorHandler instance passed in as a constructor parameter.
+            
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderErrorHandlerFacet"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+        
+        <element name="error-log">
+          
+          Placeholder for the service's ErrorLog instance passed in as a constructor parameter.
+            
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderErrorLogFacet"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+                
+        <element name="class-resolver">
+          
+          Placeholder for the module's ClassResolver instance passed in as a constructor parameter.
+            
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderClassResolverFacet"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+        
+        <element name="messages">
+          
+          Placeholder for a Messages object (from the invoking module) as constructor parameter.
+            
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderMessagesFacet"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+        
+        <element name="service-id">
+          
+          Placeholder for the service id (of the constructed service) as constructor parameter.
+            
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderServiceIdFacet"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+        
+        <element name="object">
+          
+          Placeholder for an object provided by the object translator as a constructor parameter.
+            
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderPropertyFacet"/>
+            <set-property property="translator" value="object"/>
+            <read-content property="value"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+        
+        <element name="null">
+          
+          Placeholder for a null object provided by the object translator as a constructor parameter.
+            
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderPropertyFacet"/>
+            <set-property property="translator" value="object"/>
+            <invoke-parent depth="7" method="addParameter"/>
+          </rules>
+        </element>
+        
+        <element name="set">
+          
+          Configures a property of the service instance.
+            
+          <attribute name="property" required="true">The name of a property of the service instance to configure.</attribute>
+          <attribute name="value" required="true">The value to set the property to. The value will be converted to the type of the property.</attribute>
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderPropertyFacet"/>
+            <set-property property="translator" value="smart"/>
+            <read-attribute attribute="property" property="propertyName"/>
+            <read-attribute attribute="value" property="value"/>
+            <invoke-parent depth="7" method="addProperty"/>
+          </rules>
+        </element>
+        
+        <element name="set-object">
+          
+          Configures a property of the service instance using an object.
+          
+          <attribute name="property" required="true">The name of a property of the service instance to configure.</attribute>
+          <attribute name="value" required="true">The value to set the property to, in the form of a prefix and a locator for that prefix. Prefixes are defined by the ObjectProviders configuration point. Each prefix provides a different interpretation for the locator, such as a service id or class name.</attribute>
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderPropertyFacet"/>
+            <set-property property="translator" value="object"/>
+            <read-attribute attribute="property" property="propertyName"/>
+            <read-attribute attribute="value" property="value"/>
+            <invoke-parent depth="7" method="addProperty"/>
+          </rules>
+        </element>
+        
+        <element name="set-service">
+          
+          Configures a property of the service instance to another service.
+            
+          <attribute name="property" required="true">The name of the property of the service instance to configure.</attribute>
+          <attribute name="service-id" required="true">The id of the service.</attribute>
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderPropertyFacet"/>
+            <set-property property="translator" value="service"/>
+            <read-attribute attribute="property" property="propertyName"/>
+            <read-attribute attribute="service-id" property="value"/>
+            <invoke-parent depth="7" method="addProperty"/>
+          </rules>
+        </element>
+        
+        <element name="set-configuration">
+          
+          Configures a property of the service instance to the elements contributed to an configuration point.
+          
+          <attribute name="property" required="true">The name of the property of the service instance to configure.</attribute>
+          <attribute name="configuration-id" required="true">The id of the configuration point to access.</attribute>
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderPropertyFacet"/>
+            <set-property property="translator" value="configuration"/>
+            <read-attribute attribute="property" property="propertyName"/>
+            <read-attribute attribute="configuration-id" property="value"/>
+            <invoke-parent depth="7" method="addProperty"/>
+          </rules>
+        </element>
+        
+        <element name="set-resource">
+          
+          Configures a property of the service instance to a resource.
+            
+          <attribute name="property" required="true">The name of the property of the service instance to configure.</attribute>
+          <attribute name="path" required="true">The path, relative to the module's deployment descriptor, of the resource.</attribute>
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.BuilderPropertyFacet"/>
+            <set-property property="translator" value="resource"/>
+            <read-attribute attribute="property" property="propertyName"/>
+            <read-attribute attribute="path" property="value"/>
+            <invoke-parent depth="7" method="addProperty"/>
+          </rules>
+        </element>
+        
+        <element name="event-listener">
+          
+          Registers the new services as an event listener for events produced by the specified service.
+            
+          <attribute name="service-id" required="true" translator="service">The service which will produce events.</attribute>
+          <attribute name="event-set">If given, the name of an event set for which the service will be registered. If omitted, the service will be registered for all events sets for which it implements the necessary listener interfaces.</attribute>
+          <rules>
+            <create-object class="org.apache.hivemind.service.impl.EventRegistration"/>
+            <read-attribute attribute="service-id" property="producer"/>
+            <read-attribute attribute="event-set" property="eventSetName"/>
+            <invoke-parent depth="7" method="addEventRegistration"/>
+          </rules>
+        </element>
+      </element>      
+    </schema>
+</module>

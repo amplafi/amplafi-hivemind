@@ -1,0 +1,28 @@
+<module id="amplafi.factory.facade" version="0.2.0">
+    <service-point id="facadeServicesFactory" interface="org.apache.hivemind.ServiceImplementationFactory" parameters-schema-id="facadeFactorySchema">
+        This ServiceImplementationFactory acts as a facade for another service.
+        <invoke-factory>
+            <construct class="org.amplafi.hivemind.factory.facade.FacadeImplementationFactory"/>
+        </invoke-factory>
+    </service-point>
+
+    <schema id="facadeFactorySchema">
+        <element name="service">
+            <attribute name="class">The name of the class to instantiate.</attribute>
+            <attribute name="service-id">The id of the service if autowiring will not work.</attribute>
+            <element name="interface">
+                <attribute name="class" translator="class">the name of additional interfaces to implement</attribute>
+                <rules>
+                    <push-attribute attribute="class"/>
+                    <invoke-parent method="addInterface"/>
+                </rules>
+            </element>
+            <rules>
+                <create-object class="org.amplafi.hivemind.factory.facade.FacadeImplementationFactoryParameter"/>
+                <read-attribute attribute="class" translator="class" property="implementingClass"/>
+                <read-attribute attribute="service-id" translator="service-point" property="realServicePoint"/>
+                <invoke-parent method="addElement"/>
+            </rules>
+        </element>
+    </schema>
+</module>

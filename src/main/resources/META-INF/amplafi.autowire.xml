@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<module id="amplafi.autowire" version="0.4.0">
+    <service-point id="ServicesSetterFactory" interface="org.apache.hivemind.ServiceImplementationFactory" parameters-occurs="none">
+        <invoke-factory>
+            <construct class="org.amplafi.hivemind.factory.servicessetter.ServicesSetterFactory"/>
+        </invoke-factory>
+    </service-point>     
+    
+    <service-point id="ServicesSetter" interface="org.amplafi.hivemind.factory.servicessetter.ServicesSetter">
+          Helps wiring hivemind services in simple (unmanaged) objects.
+        <invoke-factory service-id="ServicesSetterFactory" />
+    </service-point>      
+</module>

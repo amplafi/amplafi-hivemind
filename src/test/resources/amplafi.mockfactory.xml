@@ -1,0 +1,21 @@
+<module id="amplafi.mockfactory" version="0.2.0">
+    <service-point id="mockfactory" interface="org.amplafi.hivemind.factory.mock.MockBuilderFactory"
+            parameters-schema-id="amplafi.factory.factorySchema" parameters-occurs="0..1">
+        <invoke-factory>
+            <construct class="org.amplafi.hivemind.factory.mock.MockBuilderFactoryImpl">
+                <set-object property="builderFactory" value="service:hivemind.BuilderFactory"/>
+            </construct>
+        </invoke-factory>
+    </service-point>
+    
+    <!-- need to hook all ServiceImplementationFactory's -->
+    <implementation service-id="amplafi.factory.appServicesFactory">
+        <interceptor service-id="mockfactory"/>
+    </implementation>
+    <implementation service-id="amplafi.factory.facade.facadeServicesFactory">
+        <interceptor service-id="mockfactory"/>
+    </implementation>    
+    <implementation service-id="amplafi.autowire.ServicesSetterFactory">
+        <interceptor service-id="mockfactory"/>
+    </implementation>
+</module>
