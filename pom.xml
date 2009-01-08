@@ -14,10 +14,12 @@
     <packaging>jar</packaging>
     <name>Amplafi Hivemind</name>
     <description>Hivemind utilities used in tests as well as production code.</description>
+	<scm>
+		<developerConnection>scm:svn:${svn-base}/${artifactId}/trunk</developerConnection>
+	</scm>	
     <build>
         <plugins>
             <plugin>
-                <!--  !!!!!!!!!!should only be used for non-secret sauce code !!!!!!!! -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <inherited>false</inherited>
@@ -28,7 +30,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <!--  !!!!!!!!!!should only be used for non-secret sauce code !!!!!!!! -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <inherited>false</inherited>
@@ -46,7 +47,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <!--  !!!!!!!!!!should only be used for non-secret sauce code !!!!!!!! -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <inherited>false</inherited>
@@ -68,9 +68,9 @@
             </plugin>
         </plugins>
     </build>
-    <reporting>
+    <!--reporting>
         <outputDirectory>../target/site/${artifactId}</outputDirectory>
-    </reporting>
+    </reporting-->
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
