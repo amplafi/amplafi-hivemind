@@ -137,7 +137,7 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
         {
             URL descriptorURL = urls.nextElement();
             LOG.debug(descriptorURL);
-            System.out.println(descriptorURL);
+
             String protocol = descriptorURL.getProtocol();
             
             if (excludeFiles && protocol.equals("file")) {
