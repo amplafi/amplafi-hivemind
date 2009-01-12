@@ -24,7 +24,6 @@ import org.apache.hivemind.Resource;
 import org.apache.hivemind.impl.DefaultClassResolver;
 import org.apache.hivemind.impl.DefaultErrorHandler;
 import org.apache.hivemind.impl.RegistryBuilder;
-import org.apache.hivemind.impl.XmlModuleDescriptorProvider;
 import org.apache.hivemind.util.URLResource;
 
 /**
@@ -90,7 +89,7 @@ public final class HivemindHelper {
             descriptorResources.add(resource);
         }
 
-        ModuleDescriptorProvider provider = new XmlModuleDescriptorProvider(
+        ModuleDescriptorProvider provider = new CustomModuleDescriptorProvider(
                 resolver, descriptorResources);
 
 
