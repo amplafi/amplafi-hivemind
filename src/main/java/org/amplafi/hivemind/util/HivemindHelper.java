@@ -75,10 +75,10 @@ public final class HivemindHelper {
      *             When file can't be found or parsed.
      */
     public Registry buildFrameworkRegistry(String... files) throws Exception {
-        return buildFrameworkRegistry(false, files);
+        return buildFrameworkRegistry(null, false, files);
     }
     
-    public Registry buildFrameworkRegistry(boolean skipFilesystem, 
+    public Registry buildFrameworkRegistry(String skipPattern, boolean skipFilesystem,
             String... files) throws Exception {
 
         ClassResolver resolver = getClassResolver();
@@ -93,7 +93,8 @@ public final class HivemindHelper {
         ModuleDescriptorProvider provider = new XmlModuleDescriptorProvider(
                 resolver, descriptorResources);
 
-        return buildFrameworkRegistry(provider, skipFilesystem);
+
+        return buildFrameworkRegistry(provider, skipPattern, skipFilesystem);
     }
 
     /**
@@ -121,11 +122,11 @@ public final class HivemindHelper {
      * @throws Exception
      */
     public Registry getRegistry(String file, boolean shared) throws Exception {
-            return getRegistry(file, shared, false);
+            return getRegistry(file, shared, null, false);
     }
 
-    public Registry getRegistry(String file, boolean shared, boolean skipFilesystem)
-            throws Exception {
+    public Registry getRegistry(String file, boolean shared, 
+            String skipPattern, boolean skipFiles ) throws Exception {
         Registry registry = null;
         // TODO: Always create a new registry for now.
         // OOME if we have too many registries created.
@@ -135,7 +136,7 @@ public final class HivemindHelper {
         }
 
         if (registry == null) {
-            registry = buildFrameworkRegistry(skipFilesystem, file);
+            registry = buildFrameworkRegistry(skipPattern, skipFiles, file);
 
             if (shared) {
                 registries.put(file, registry);
@@ -180,17 +181,15 @@ public final class HivemindHelper {
     }
 
     protected Registry buildFrameworkRegistry(ModuleDescriptorProvider customProvider,
-            boolean skipFilesystem) {
+            String skipPattern, boolean skipFilesystem) {
         ClassResolver resolver = getClassResolver();
 
         RegistryBuilder builder = new RegistryBuilder(new QuietErrorHandler());
 
-        ModuleDescriptorProvider provider;
-        if (skipFilesystem) {
-            provider = new CustomModuleDescriptorProvider(resolver);
-        } else {
-            provider = new XmlModuleDescriptorProvider(resolver);
-        }
+        CustomModuleDescriptorProvider provider = new CustomModuleDescriptorProvider(resolver);
+        provider.setExcludeFiles(skipFilesystem);
+        provider.setExcludePattern(skipPattern);
+
         builder.addModuleDescriptorProvider(provider);
         builder.addModuleDescriptorProvider(customProvider);
 

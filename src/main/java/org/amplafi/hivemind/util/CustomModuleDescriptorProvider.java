@@ -12,6 +12,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
+import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hivemind.ApplicationRuntimeException;
@@ -65,6 +66,12 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
      * Parser instance used by all parsing of module descriptors.
      */
     private XmlResourceProcessor _processor;
+
+    private boolean excludeFiles;
+
+    private boolean excludeJars;
+
+    private String excludePattern;
 
     /**
      * Convenience constructor. Equivalent to using
@@ -128,13 +135,29 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
                     ex);
         }
 
+        Pattern pattern = excludePattern==null ?
+            null : Pattern.compile(excludePattern);
+
         while (e.hasMoreElements())
         {
             URL descriptorURL = (URL) e.nextElement();
+            LOG.debug(descriptorURL);
 
-            if (!descriptorURL.getProtocol().equals("file")) { 
-                descriptors.add(new URLResource(descriptorURL));
+            String protocol = descriptorURL.getProtocol();
+            
+            if (excludeFiles && protocol.equals("file")) {
+                continue;
             }
+            
+            if (excludeJars && protocol.equals("jar")) {
+                continue;
+            }
+            
+            if (pattern!=null && pattern.matcher(descriptorURL.toString()).matches()) {
+                continue;
+            }
+
+            descriptors.add(new URLResource(descriptorURL));
         }
 
         return descriptors;
@@ -208,5 +231,17 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
     protected XmlResourceProcessor getResourceProcessor(ClassResolver resolver, ErrorHandler handler)
     {
         return new XmlResourceProcessor(resolver, handler);
+    }
+
+    public void setExcludeFiles(boolean excludeFiles) {
+        this.excludeFiles = excludeFiles;
+    }
+
+    public void setExcludeJars(boolean excludeJars) {
+        this.excludeJars = excludeJars;
+    }
+
+    public void setExcludePattern(String excludePattern) {
+        this.excludePattern = excludePattern;
     }
 }
