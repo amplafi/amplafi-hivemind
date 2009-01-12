@@ -31,7 +31,8 @@ import org.apache.hivemind.util.URLResource;
  * {@link org.apache.hivemind.parse.DescriptorParser} to provide module descriptors defined in XML.
  * The module descriptors are loaded from files or resources on the classpath.
  * 
- * Descriptors found on the file system are NOT included.
+ * Allows defining rules that will skip hivemind files (by name pattern or file location [jar, file]).
+ * Also allows including submodules form classpath locations by using the classpath:// prefix.
  *
  * @author Knut Wannheden
  * @author Andreas Androeu
@@ -51,7 +52,7 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
      * Set of all specified resources processed by this ModuleDescriptorProvider. Descriptors of
      * sub-modules are not included.
      */
-    private List _resources = new ArrayList();
+    private List<Resource> _resources = new ArrayList<Resource>();
 
     /**
      * List of parsed {@link ModuleDescriptor} instances. Also includes referenced sub-modules.
@@ -115,19 +116,19 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
         _resources.addAll(resources);
     }
 
-    private List getDescriptorResources(String resourcePath, ClassResolver resolver)
+    private List<Resource> getDescriptorResources(String resourcePath, ClassResolver resolver)
     {
         if (LOG.isDebugEnabled())
             LOG.debug("Processing modules visible to " + resolver);
 
-        List descriptors = new ArrayList();
+        List<Resource> descriptors = new ArrayList<Resource>();
 
         ClassLoader loader = resolver.getClassLoader();
-        Enumeration e = null;
+        Enumeration<URL> urls;
 
         try
         {
-            e = loader.getResources(resourcePath);
+            urls = loader.getResources(resourcePath);
         }
         catch (IOException ex)
         {
@@ -135,14 +136,13 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
                     ex);
         }
 
-        Pattern pattern = excludePattern==null ?
-            null : Pattern.compile(excludePattern);
+        Pattern pattern = excludePattern==null ? null : Pattern.compile(excludePattern);
 
-        while (e.hasMoreElements())
+        while (urls.hasMoreElements())
         {
-            URL descriptorURL = (URL) e.nextElement();
+            URL descriptorURL = urls.nextElement();
             LOG.debug(descriptorURL);
-
+            System.out.println(descriptorURL);
             String protocol = descriptorURL.getProtocol();
             
             if (excludeFiles && protocol.equals("file")) {
@@ -214,6 +214,14 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
 
             Resource descriptorResource = smd.getDescriptor();
 
+            String path = descriptorResource.getPath();
+
+            int classpathPos = path.indexOf("classpath://");
+            if (classpathPos>=0) {
+                path = path.substring(classpathPos + "classpath://".length());
+                descriptorResource = getDescriptorResources(path, _resolver).get(0);
+            }
+
             if (descriptorResource.getResourceURL() == null)
             {
                 _errorHandler.error(
@@ -224,7 +232,7 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
                 continue;
             }
 
-            processResource(smd.getDescriptor());
+            processResource(descriptorResource);
         }
     }
 
