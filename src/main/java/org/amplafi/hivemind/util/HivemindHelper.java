@@ -75,6 +75,12 @@ public final class HivemindHelper {
      *             When file can't be found or parsed.
      */
     public Registry buildFrameworkRegistry(String... files) throws Exception {
+        return buildFrameworkRegistry(false, files);
+    }
+    
+    public Registry buildFrameworkRegistry(boolean skipFilesystem, 
+            String... files) throws Exception {
+
         ClassResolver resolver = getClassResolver();
 
         List<Resource> descriptorResources = new ArrayList<Resource>();
@@ -87,7 +93,7 @@ public final class HivemindHelper {
         ModuleDescriptorProvider provider = new XmlModuleDescriptorProvider(
                 resolver, descriptorResources);
 
-        return buildFrameworkRegistry(provider);
+        return buildFrameworkRegistry(provider, skipFilesystem);
     }
 
     /**
@@ -168,14 +174,19 @@ public final class HivemindHelper {
         registries.clear();
     }
 
-    protected Registry buildFrameworkRegistry(
-            ModuleDescriptorProvider customProvider) {
+    protected Registry buildFrameworkRegistry(ModuleDescriptorProvider customProvider,
+            boolean skipFilesystem) {
         ClassResolver resolver = getClassResolver();
 
         RegistryBuilder builder = new RegistryBuilder(new QuietErrorHandler());
 
-        builder.addModuleDescriptorProvider(new XmlModuleDescriptorProvider(
-                resolver));
+        ModuleDescriptorProvider provider;
+        if (skipFilesystem) {
+            provider = new CustomModuleDescriptorProvider(resolver);
+        } else {
+            provider = new XmlModuleDescriptorProvider(resolver);
+        }
+        builder.addModuleDescriptorProvider(provider);
         builder.addModuleDescriptorProvider(customProvider);
 
         return builder.constructRegistry(Locale.getDefault());
@@ -183,7 +194,7 @@ public final class HivemindHelper {
 
     @SuppressWarnings("unused")
     protected Registry buildMinimalRegistry(Resource l) throws Exception {
-        RegistryBuilder builder = new RegistryBuilder(new QuietErrorHandler());
+        RegistryBuilder builder = new RegistryBuilder(/*new QuietErrorHandler()*/);
         return builder.constructRegistry(Locale.getDefault());
     }
 
