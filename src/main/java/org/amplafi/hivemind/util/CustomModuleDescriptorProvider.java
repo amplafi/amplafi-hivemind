@@ -34,6 +34,11 @@ import org.apache.hivemind.util.URLResource;
  */
 public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
 {
+    /**
+     * magic prefix to see files in the class path.
+     */
+    private static final String CLASSPATH = "classpath://";
+
     private static final Log LOG = LogFactory.getLog(CustomModuleDescriptorProvider.class);
 
     /**
@@ -223,10 +228,22 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
 
             String path = descriptorResource.getPath();
 
-            int classpathPos = path.indexOf("classpath://");
+            int classpathPos = path.indexOf(CLASSPATH);
             if (classpathPos>=0) {
-                path = path.substring(classpathPos + "classpath://".length());
-                descriptorResource = getDescriptorResources(path, _resolver).get(0);
+                // java's current directory is prepended to "classpath://" so that needs to be stripped off as well
+                // i.e. Users/patmoore/projects/amplafi-foundation/target/test-classes/classpath://amplafi-mock.tapestry4.xml
+                path = path.substring(classpathPos + CLASSPATH.length());
+                List<Resource> descriptorResources = getDescriptorResources(path, _resolver);
+                if ( descriptorResources== null || descriptorResources.isEmpty()) {
+                    _errorHandler.error(
+                        LOG, "classpathCannotFindsubModule:"+ path, 
+                        smd.getLocation(),
+                        null);
+                    continue;
+                } else if ( descriptorResources.size() > 1) {
+                    _errorHandler.error(LOG, "WARNING:"+path+" multiple locations found "+descriptorResources, smd.getLocation(), null);
+                }
+                descriptorResource = descriptorResources.get(0);
             }
 
             if (descriptorResource.getResourceURL() == null)
