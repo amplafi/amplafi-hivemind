@@ -121,6 +121,11 @@ public final class HivemindHelper {
      * @throws Exception
      */
     public Registry getRegistry(String file, boolean shared) throws Exception {
+            return getRegistry(file, shared, false);
+    }
+
+    public Registry getRegistry(String file, boolean shared, boolean skipFilesystem)
+            throws Exception {
         Registry registry = null;
         // TODO: Always create a new registry for now.
         // OOME if we have too many registries created.
@@ -130,7 +135,7 @@ public final class HivemindHelper {
         }
 
         if (registry == null) {
-            registry = buildFrameworkRegistry(file);
+            registry = buildFrameworkRegistry(skipFilesystem, file);
 
             if (shared) {
                 registries.put(file, registry);
