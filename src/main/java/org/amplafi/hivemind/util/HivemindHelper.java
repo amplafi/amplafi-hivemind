@@ -185,9 +185,8 @@ public final class HivemindHelper {
 
         RegistryBuilder builder = new RegistryBuilder(new QuietErrorHandler());
 
-        CustomModuleDescriptorProvider provider = new CustomModuleDescriptorProvider(resolver);
-        provider.setExcludeFiles(skipFilesystem);
-        provider.setExcludePattern(skipPattern);
+        CustomModuleDescriptorProvider provider = new CustomModuleDescriptorProvider(
+                resolver, skipPattern, skipFilesystem, false);
 
         builder.addModuleDescriptorProvider(provider);
         builder.addModuleDescriptorProvider(customProvider);

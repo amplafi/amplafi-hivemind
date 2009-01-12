@@ -39,7 +39,7 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
     /**
      * The default path, within a JAR or the classpath, to the XML HiveMind module deployment
      * descriptor: <code>META-INF/hivemodule.xml</code>. Use this constant with the
-     * {@link #XmlModuleDescriptorProvider(ClassResolver, String)} constructor.
+     * {@link #CustomModuleDescriptorProvider(ClassResolver, String)} constructor.
      */
     public static final String HIVE_MODULE_XML = "META-INF/hivemodule.xml";
 
@@ -71,23 +71,35 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
 
     /**
      * Convenience constructor. Equivalent to using
-     * {@link #XmlModuleDescriptorProvider(ClassResolver, String)}with {@link #HIVE_MODULE_XML} as
+     * {@link #CustomModuleDescriptorProvider(ClassResolver, String)}with {@link #HIVE_MODULE_XML} as
      * the second argument.
      */
-    public CustomModuleDescriptorProvider(ClassResolver resolver)
-    {
+    public CustomModuleDescriptorProvider(ClassResolver resolver) {
         this(resolver, HIVE_MODULE_XML);
+    }
+
+    public CustomModuleDescriptorProvider(ClassResolver resolver, String excludePattern,
+            boolean excludeFiles, boolean excludeJars) {
+        this(resolver, HIVE_MODULE_XML, excludePattern, excludeFiles, excludeJars);
     }
 
     /**
      * Loads all XML module descriptors found on the classpath (using the given
      * {@link org.apache.hivemind.ClassResolver}. Only module descriptors matching the specified
-     * path are loaded. Use the {@link XmlModuleDescriptorProvider#HIVE_MODULE_XML} constant to load
+     * path are loaded. Use the {@link CustomModuleDescriptorProvider#HIVE_MODULE_XML} constant to load
      * all descriptors in the default location.
      */
-    public CustomModuleDescriptorProvider(ClassResolver resolver, String resourcePath)
-    {
+    public CustomModuleDescriptorProvider(ClassResolver resolver, String resourcePath) {
+        this(resolver, resourcePath, null, false, false);
+    }
+
+    public CustomModuleDescriptorProvider(ClassResolver resolver, String resourcePath,
+            String excludePattern, boolean excludeFiles, boolean excludeJars) {
         _resolver = resolver;
+        this.excludePattern = excludePattern;
+        this.excludeFiles = excludeFiles;
+        this.excludeJars = excludeJars;
+
         _resources.addAll(getDescriptorResources(resourcePath, _resolver));
     }
 
@@ -97,7 +109,7 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
      */
     public CustomModuleDescriptorProvider(ClassResolver resolver, Resource resource)
     {
-        _resolver = resolver;
+        _resolver = resolver;        
         _resources.add(resource);
     }
 
@@ -234,17 +246,5 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
     protected XmlResourceProcessor getResourceProcessor(ClassResolver resolver, ErrorHandler handler)
     {
         return new XmlResourceProcessor(resolver, handler);
-    }
-
-    public void setExcludeFiles(boolean excludeFiles) {
-        this.excludeFiles = excludeFiles;
-    }
-
-    public void setExcludeJars(boolean excludeJars) {
-        this.excludeJars = excludeJars;
-    }
-
-    public void setExcludePattern(String excludePattern) {
-        this.excludePattern = excludePattern;
     }
 }
