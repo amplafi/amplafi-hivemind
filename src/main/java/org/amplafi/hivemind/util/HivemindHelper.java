@@ -76,7 +76,7 @@ public final class HivemindHelper {
     public Registry buildFrameworkRegistry(String... files) throws Exception {
         return buildFrameworkRegistry(null, false, files);
     }
-    
+
     public Registry buildFrameworkRegistry(String skipPattern, boolean skipFilesystem,
             String... files) throws Exception {
 
@@ -124,7 +124,7 @@ public final class HivemindHelper {
             return getRegistry(file, shared, null, false);
     }
 
-    public Registry getRegistry(String file, boolean shared, 
+    public Registry getRegistry(String file, boolean shared,
             String skipPattern, boolean skipFiles ) throws Exception {
         Registry registry = null;
         // TODO: Always create a new registry for now.
@@ -183,7 +183,7 @@ public final class HivemindHelper {
             String skipPattern, boolean skipFilesystem) {
         ClassResolver resolver = getClassResolver();
 
-        RegistryBuilder builder = new RegistryBuilder(new QuietErrorHandler());
+        RegistryBuilder builder = new RegistryBuilder(/*new QuietErrorHandler()*/);
 
         CustomModuleDescriptorProvider provider = new CustomModuleDescriptorProvider(
                 resolver, skipPattern, skipFilesystem, false);
