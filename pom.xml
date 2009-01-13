@@ -68,14 +68,6 @@
             <artifactId>hivemind</artifactId>
         </dependency>
         <dependency>
-            <groupId>hivemind</groupId>
-            <artifactId>hivemind-lib</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>hivemind</groupId>
-            <artifactId>hivemind-jmx</artifactId>
-        </dependency>
-        <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
         </dependency>
