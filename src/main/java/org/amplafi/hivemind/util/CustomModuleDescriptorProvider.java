@@ -25,7 +25,7 @@ import org.apache.hivemind.util.URLResource;
  * Implementation of the {@link ModuleDescriptorProvider} interface which uses the
  * {@link org.apache.hivemind.parse.DescriptorParser} to provide module descriptors defined in XML.
  * The module descriptors are loaded from files or resources on the classpath.
- * 
+ *
  * Allows defining rules that will skip hivemind files (by name pattern or file location [jar, file]).
  * Also allows including submodules form classpath locations by using the classpath:// prefix.
  *
@@ -114,7 +114,7 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
      */
     public CustomModuleDescriptorProvider(ClassResolver resolver, Resource resource)
     {
-        _resolver = resolver;        
+        _resolver = resolver;
         _resources.add(resource);
     }
 
@@ -130,8 +130,9 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
 
     private List<Resource> getDescriptorResources(String resourcePath, ClassResolver resolver)
     {
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Processing modules visible to " + resolver);
+        }
 
         List<Resource> descriptors = new ArrayList<Resource>();
 
@@ -156,16 +157,25 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
             LOG.debug(descriptorURL);
 
             String protocol = descriptorURL.getProtocol();
-            
+
             if (excludeFiles && protocol.equals("file")) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("ExcludeFiles therefore excluding " + descriptorURL);
+                }
                 continue;
             }
-            
+
             if (excludeJars && protocol.equals("jar")) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("ExcludeJars therefore excluding " + descriptorURL);
+                }
                 continue;
             }
-            
+
             if (pattern!=null && pattern.matcher(descriptorURL.toString()).matches()) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("ExcludePattern therefore excluding " + descriptorURL);
+                }
                 continue;
             }
 
@@ -181,9 +191,8 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
 
         _processor = getResourceProcessor(_resolver, handler);
 
-        for (Iterator i = _resources.iterator(); i.hasNext();)
-        {
-            Resource resource = (Resource) i.next();
+        for (Object element : _resources) {
+            Resource resource = (Resource) element;
 
             processResource(resource);
         }
@@ -217,8 +226,9 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
     {
         List subModules = moduleDescriptor.getSubModules();
 
-        if (subModules == null)
+        if (subModules == null) {
             return;
+        }
 
         for (Iterator i = subModules.iterator(); i.hasNext();)
         {
@@ -236,7 +246,7 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
                 List<Resource> descriptorResources = getDescriptorResources(path, _resolver);
                 if ( descriptorResources== null || descriptorResources.isEmpty()) {
                     _errorHandler.error(
-                        LOG, "classpathCannotFindsubModule:"+ path, 
+                        LOG, "classpathCannotFindsubModule:"+ path,
                         smd.getLocation(),
                         null);
                     continue;
@@ -263,5 +273,10 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
     protected XmlResourceProcessor getResourceProcessor(ClassResolver resolver, ErrorHandler handler)
     {
         return new XmlResourceProcessor(resolver, handler);
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + "[excludeJars="+ excludeJars+ "; excludeFiles="+excludeFiles+"; excludePattern="+excludePattern+"]";
     }
 }
