@@ -154,7 +154,6 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
         while (urls.hasMoreElements())
         {
             URL descriptorURL = urls.nextElement();
-            LOG.debug(descriptorURL);
 
             String protocol = descriptorURL.getProtocol();
 
@@ -179,6 +178,7 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
                 continue;
             }
 
+            LOG.debug(descriptorURL);
             descriptors.add(new URLResource(descriptorURL));
         }
 
