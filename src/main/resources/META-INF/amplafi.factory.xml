@@ -10,6 +10,24 @@
         </invoke-factory>
     </service-point>
     
+    <contribution configuration-id="hivemind.Translators">
+        <translator class="org.amplafi.hivemind.schema.UriTranslator" name="uri"/>
+    </contribution>
+    <service-point id="TranslatorProvider" interface="org.apache.hivemind.service.ObjectProvider">
+    
+    Provides the "translator:" prefix, which exposes translators as objectproviders
+     (should really be a translator - but cannot figure out how to supply translators
+      in the &lt;set property= value= /&gt; initialization)
+    
+        <invoke-factory>
+            <construct class="org.amplafi.hivemind.factory.TranslatorObjectProviderAdaptor"/>
+        </invoke-factory>
+    </service-point>
+    <contribution configuration-id="hivemind.ObjectProviders">
+        <provider prefix="translator" service-id="TranslatorProvider"/>
+    </contribution>
+    
+    
     <schema id="servicelist">
         <element name="service">
             <attribute name="id" required="true" translator="service"/>
