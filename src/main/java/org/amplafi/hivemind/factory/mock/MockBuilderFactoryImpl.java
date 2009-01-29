@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -18,6 +19,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.amplafi.hivemind.annotations.NotService;
+import org.amplafi.hivemind.factory.ServiceTranslator;
 import org.amplafi.hivemind.factory.facade.FacadeServiceProxy;
 import org.amplafi.hivemind.util.SwitchableThreadLocal;
 import org.apache.commons.collections.CollectionUtils;
@@ -54,6 +56,10 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
      * each thread has its own batch of mock objects.
      */
     private SwitchableThreadLocal<Map<Class<?>, Object>> mockObjectsMap;
+    /**
+     * handle explicitly named services
+     */
+    private SwitchableThreadLocal<Map<String, Object>> mockObjectsByNameMap;
 
     /**
      * these are the classes that even if they exist in the underlying
@@ -90,6 +96,12 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
                 return new ConcurrentHashMap<Class<?>, Object>();
             }
         };
+        mockObjectsByNameMap = new SwitchableThreadLocal<Map<String, Object>>(this.shareMocksAcrossThreads) {
+            @Override
+            protected Map<String, Object> initialValue() {
+                return new ConcurrentHashMap<String, Object>();
+            }
+        };
     }
 
     public void setShareMocksAcrossThreads(boolean shareMocksAcrossThreads) {
@@ -98,6 +110,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
         mockOverride.setMode(shareMocksAcrossThreads);
         dontMockOverride.setMode(shareMocksAcrossThreads);
         mockObjectsMap.setMode(shareMocksAcrossThreads);
+        mockObjectsByNameMap.setMode(shareMocksAcrossThreads);
     }
 
     /**
@@ -182,7 +195,6 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
      * replay the EasyMock at the serviceInterface.
      * @param serviceInterfaces
      */
-    @SuppressWarnings("unchecked")
     public void replay(Class<?>... serviceInterfaces) {
         for(Class<?>serviceInterface : serviceInterfaces) {
             Object mock = getMockMap().get(serviceInterface);
@@ -191,9 +203,8 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
             }
         }
     }
-    @SuppressWarnings("unchecked")
     public void replay() {
-        Collection<Object> mocks = getMockMap().values();
+        Collection<Object> mocks = getMocks();
         for(Object mock : mocks) {
             if ( mock != null ) {
                 try {
@@ -209,7 +220,6 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
      * verify the EasyMock at the serviceInterface.
      * @param serviceInterfaces
      */
-    @SuppressWarnings("unchecked")
     public void verify(Class<?>... serviceInterfaces) {
         for(Class<?>serviceInterface : serviceInterfaces) {
             Object mock = getMockMap().get(serviceInterface);
@@ -218,9 +228,9 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
             }
         }
     }
-    @SuppressWarnings("unchecked")
+
     public void verify() {
-        Collection<Object> mocks = getMockMap().values();
+        Collection<Object> mocks = getMocks();
         for(Object mock : mocks) {
             if ( mock != null ) {
                 try {
@@ -232,11 +242,20 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
             }
         }
     }
+
+    /**
+     * @return
+     */
+    private Collection<Object> getMocks() {
+        ArrayList<Object> mocks = new ArrayList<Object>();
+        mocks.addAll(getMockMap().values());
+        mocks.addAll(this.mockObjectsByNameMap.get().values());
+        return mocks;
+    }
     /**
      * replay the EasyMock at the serviceInterface.
      * @param serviceInterfaces
      */
-    @SuppressWarnings("unchecked")
     public void reset(Class<?>... serviceInterfaces) {
         for(Class<?>serviceInterface : serviceInterfaces) {
             Object mock = getMockMap().get(serviceInterface);
@@ -251,9 +270,8 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
      * mockOverride sets for this thread.
      *
      */
-    @SuppressWarnings("unchecked")
     public void reset() {
-        Collection<Object> mocks = getMockMap().values();
+        Collection<Object> mocks = getMocks();
         for(Object mock : mocks) {
             if ( mock != null ) {
                 EasyMock.reset(mock);
@@ -342,7 +360,6 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
      * @param factoryParameters
      * @return real service
      */
-    @SuppressWarnings("unchecked")
     Object createCoreServiceImplementation(
             ServiceImplementationFactory applicationBuilderFactory,
             ServiceImplementationFactoryParameters factoryParameters) {
@@ -388,7 +405,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
      * @return mock object implementing interfaceClass.
      */
     @SuppressWarnings("unchecked")
-    private <T> T getThreadsMock(Class<T> interfaceClass) {
+    protected <T> T getThreadsMock(Class<T> interfaceClass) {
         T mock = (T) getMockMap().get(interfaceClass);
         if ( mock != null ) {
             return mock;
@@ -400,6 +417,21 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
             throw new IllegalStateException("Need to program mock first for interface "+interfaceClass, e);
         }
         getMockMap().put(interfaceClass, mock);
+        return mock;
+    }
+    @SuppressWarnings("unchecked")
+    protected <T> T getThreadsMockByName(String serviceId, Class<T> interfaceClass) {
+        T mock = (T) this.mockObjectsByNameMap.get().get(serviceId);
+        if ( mock != null ) {
+            return mock;
+        }
+        IMocksControl mockControl = getMockControl();
+        try {
+            mock = mockControl.createMock(interfaceClass);
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("Need to program mock first for interface "+interfaceClass, e);
+        }
+        this.mockObjectsByNameMap.get().put(serviceId, mock);
         return mock;
     }
     /**
@@ -552,7 +584,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
                 case 1:
                     serviceInterface = (Class) args[0];
                     if ( realModule.containsService(serviceInterface) ) {
-                        createdObject = method.invoke(realModule, args);
+                        createdObject = realModule.getService(serviceInterface);
                     } else if ( isMockable(serviceInterface)) {
                         // no such service supply a proxy (unless it is a java class)
                         createdObject = getThreadsMock(serviceInterface);
@@ -562,22 +594,29 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
                     break;
                 case 2:
                     serviceInterface = (Class) args[1];
+                    String serviceId = (String) args[0];
                     try {
-                        createdObject = method.invoke(realModule, args);
+                        createdObject = realModule.getService(serviceId, serviceInterface);
                     } catch(ApplicationRuntimeException e) {
-                        createdObject = getThreadsMock(serviceInterface);
+                        createdObject = getThreadsMockByName(serviceId, serviceInterface);
                     }
                     break;
                 default:
                     createdObject = method.invoke(realModule, args);
                 }
                 return createdObject;
+            } else if ( "getTranslator".equals(method.getName())){
+                String translator = (String) args[0];
+                if ( "service".equals(translator)) {
+                    return ServiceTranslator.INSTANCE;
+                } else {
+                    return realModule.getTranslator(translator);
+                }
             } else {
                 return method.invoke(realModule, args);
             }
         }
     }
-
     /**
      * This proxy intercepts all calls to a service. This allows
      * mock objects to mask existing objects.
