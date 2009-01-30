@@ -579,7 +579,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
                 serviceInterface = (Class) args[0];
                 return isMockable(serviceInterface);
             } else if ( "getService".equals(method.getName())) {
-                Object createdObject;
+                Object createdObject = null;
                 switch( args.length ) {
                 case 1:
                     serviceInterface = (Class) args[0];
@@ -595,9 +595,16 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
                 case 2:
                     serviceInterface = (Class) args[1];
                     String serviceId = (String) args[0];
-                    try {
-                        createdObject = realModule.getService(serviceId, serviceInterface);
-                    } catch(ApplicationRuntimeException e) {
+                    // Do this look because the class may be specified too specifically. Usually this will result in an error
+                    // when actually trying to set the property. But the classcast exception that occurs at that point is more informative.
+                    for(Class<?> clazz : new Class<?>[] { serviceInterface, Object.class }) {
+                        try {
+                            createdObject = realModule.getService(serviceId, clazz);
+                            break;
+                        } catch(ApplicationRuntimeException e) {
+                        }
+                    }
+                    if ( createdObject == null) {
                         createdObject = getThreadsMockByName(serviceId, serviceInterface);
                     }
                     break;
