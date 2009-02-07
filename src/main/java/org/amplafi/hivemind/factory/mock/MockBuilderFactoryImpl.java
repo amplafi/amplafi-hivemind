@@ -634,8 +634,12 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
          * does not have a defined object.
          */
         private final Class<?> interfaceClass;
+        private ServiceImplementationFactoryParameters factoryParameters;
+        private ServiceImplementationFactory delegate;
         MockSwitcher(ServiceImplementationFactory delegate, ServiceImplementationFactoryParameters factoryParameters) {
-            super(createCoreServiceImplementation(delegate, factoryParameters));
+            super();
+            this.delegate = delegate;
+            this.factoryParameters = factoryParameters;
             interfaceClass = factoryParameters.getServiceInterface();
         }
 
@@ -658,6 +662,14 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
          */
         public Class<?> getInterfaceClass() {
             return interfaceClass;
+        }
+        @Override
+        protected Object createUnderlyingService() {
+            try {
+                return createCoreServiceImplementation(delegate, factoryParameters);
+            } catch (Exception e) {
+                return null;
+            }
         }
     }
 }

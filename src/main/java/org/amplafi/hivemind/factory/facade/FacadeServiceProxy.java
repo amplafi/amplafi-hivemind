@@ -23,6 +23,9 @@ public class FacadeServiceProxy implements InvocationHandler {
 
     private Object underlyingService;
     private ConcurrentMap<Class<?>, ConcurrentMap<Method, Method>> callingMethodInvokedMethodMap = new ConcurrentHashMap<Class<?>, ConcurrentMap<Method, Method>>();
+    public FacadeServiceProxy() {
+
+    }
     public FacadeServiceProxy(Object underlyingService) {
         this.underlyingService = underlyingService;
     }
@@ -84,6 +87,15 @@ public class FacadeServiceProxy implements InvocationHandler {
     }
 
     public Object getUnderlyingService() {
+        if ( this.underlyingService == null) {
+            this.underlyingService = createUnderlyingService();
+        }
         return underlyingService;
+    }
+    /**
+     * @return
+     */
+    protected Object createUnderlyingService() {
+        return null;
     }
 }
