@@ -641,6 +641,9 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
             this.delegate = delegate;
             this.factoryParameters = factoryParameters;
             interfaceClass = factoryParameters.getServiceInterface();
+            // MUST create the underlying service so that <event-listeners> get triggered and so that the initialization happens.
+            // However using createUnderlyingService() we can control bad initialization effects (is this good?)
+            setUnderlyingService(createUnderlyingService());
         }
 
         /**
@@ -670,6 +673,11 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
             } catch (Exception e) {
                 return null;
             }
+        }
+
+        @Override
+        public String toString() {
+            return "interface "+this.interfaceClass;
         }
     }
 }

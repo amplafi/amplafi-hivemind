@@ -178,7 +178,7 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
                 continue;
             }
 
-            LOG.debug(descriptorURL);
+            LOG.debug("Will process hivemind main file: " + descriptorURL);
             descriptors.add(new URLResource(descriptorURL));
         }
 
@@ -227,8 +227,10 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
         List subModules = moduleDescriptor.getSubModules();
 
         if (subModules == null) {
+            LOG.debug("No submodules in "+moduleDescriptor);
             return;
         }
+        LOG.debug("Beginning processing submodules in "+moduleDescriptor);
 
         for (Iterator i = subModules.iterator(); i.hasNext();)
         {
@@ -265,9 +267,10 @@ public class CustomModuleDescriptorProvider implements ModuleDescriptorProvider
                         null);
                 continue;
             }
-
+            LOG.debug("processing submodule "+descriptorResource);
             processResource(descriptorResource);
         }
+        LOG.debug("Completed processing submodules in "+moduleDescriptor);
     }
 
     protected XmlResourceProcessor getResourceProcessor(ClassResolver resolver, ErrorHandler handler)
