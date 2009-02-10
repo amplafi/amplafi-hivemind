@@ -213,6 +213,9 @@
     <logger name="com.mchange">
         <level value="INFO"/>
     </logger>
+    <logger name="org.amplafi">
+        <level value="INFO"/>
+    </logger>
     <logger name="com.p6spy">
         <level value="TRACE"/>
     </logger>
