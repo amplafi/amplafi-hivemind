@@ -70,7 +70,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
 
 
     public MockBuilderFactoryImpl() {
-        this(false);
+        this(true);
     }
 
     public MockBuilderFactoryImpl(boolean shareMocksAcrossThreads) {
@@ -106,7 +106,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
 
     public void setShareMocksAcrossThreads(boolean shareMocksAcrossThreads) {
         this.shareMocksAcrossThreads = shareMocksAcrossThreads;
-        // simply change the mode thread locals are woking in from now.
+        // simply change the mode thread locals are working in from now.
         mockOverride.setMode(shareMocksAcrossThreads);
         dontMockOverride.setMode(shareMocksAcrossThreads);
         mockObjectsMap.setMode(shareMocksAcrossThreads);
@@ -421,7 +421,8 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
     }
     @SuppressWarnings("unchecked")
     protected <T> T getThreadsMockByName(String serviceId, Class<T> interfaceClass) {
-        T mock = (T) this.mockObjectsByNameMap.get().get(serviceId);
+        Map<String, Object> map = this.mockObjectsByNameMap.get();
+        T mock = (T) map.get(serviceId);
         if ( mock != null ) {
             return mock;
         }
@@ -431,7 +432,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
         } catch (IllegalStateException e) {
             throw new IllegalStateException("Need to program mock first for interface "+interfaceClass, e);
         }
-        this.mockObjectsByNameMap.get().put(serviceId, mock);
+        map.put(serviceId, mock);
         return mock;
     }
     /**
