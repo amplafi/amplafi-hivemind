@@ -77,6 +77,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
      */
     private SwitchableThreadLocal<Set<Class<?>>> mockOverride;
     private SwitchableThreadLocal<Set<Class<?>>> dontMockOverride;
+    private Log log;
 
 
     public MockBuilderFactoryImpl() {
@@ -510,6 +511,20 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
     }
 
     /**
+     * @param log the log to set
+     */
+    public void setLog(Log log) {
+        this.log = log;
+    }
+
+    /**
+     * @return the log
+     */
+    public Log getLog() {
+        return log;
+    }
+
+    /**
      * this intercepts calls to another {@link ServiceImplementationFactory}
      * so that it is guaranteed that an object with the requested service interface is created.
      *
@@ -608,14 +623,17 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
                     String serviceId = (String) args[0];
                     // Do this look because the class may be specified too specifically. Usually this will result in an error
                     // when actually trying to set the property. But the classcast exception that occurs at that point is more informative.
+                    StringBuilder errorMessages = new StringBuilder();
                     for(Class<?> clazz : new Class<?>[] { serviceInterface, Object.class }) {
                         try {
                             createdObject = realModule.getService(serviceId, clazz);
                             break;
                         } catch(ApplicationRuntimeException e) {
+                            errorMessages.append("clazz = ").append(clazz).append(" serviceId=").append(serviceId).append(" error message=").append(e.getMessage());
                         }
                     }
                     if ( createdObject == null) {
+                        getLog().debug("Creating mock for specifically named service. Error messages are:\n"+errorMessages);
                         createdObject = getThreadsMockByName(serviceId, serviceInterface);
                     }
                     break;
