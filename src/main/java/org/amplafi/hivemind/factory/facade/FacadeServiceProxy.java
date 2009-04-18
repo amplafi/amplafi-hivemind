@@ -103,7 +103,7 @@ public class FacadeServiceProxy implements InvocationHandler {
         return underlyingService;
     }
     /**
-     * @return
+     * @return by default return null if trying to create the service.
      */
     protected Object createUnderlyingService() {
         return null;
