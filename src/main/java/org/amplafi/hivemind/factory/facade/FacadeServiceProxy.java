@@ -43,10 +43,27 @@ public class FacadeServiceProxy implements InvocationHandler {
     @SuppressWarnings("unused")
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Object underlyingObject = getUnderlyingService();
-
         // get fresh because the getUnderlyingService() method may be overridden by subclasses
         // that alter the class based on circumstances.
         Class<?> underlyingClass = underlyingObject.getClass();
+        Method m = getMethodToUse(method, underlyingClass);
+        try {
+            return m.invoke(underlyingObject, args);
+        } catch (InvocationTargetException e ) {
+            // to reduce unnecessary nesting.
+            throw e.getCause();
+        }
+    }
+    /**
+     * Look for any cached method matching the signature requested for the class.
+     *
+     * Enables handling the "duck-typing". Underlying object may not actually implement the interface/extend the class that 'method'
+     * applies to. So need to find the method object with same signature within underlyingClass.
+     * @param method
+     * @param underlyingClass
+     * @return the method that should be used.
+     */
+    protected Method getMethodToUse(Method method, Class<?> underlyingClass) {
         ConcurrentMap<Method, Method> methodMap = callingMethodInvokedMethodMap.get(underlyingClass);
         if ( methodMap == null) {
             callingMethodInvokedMethodMap.putIfAbsent(underlyingClass, new ConcurrentHashMap<Method, Method>());
@@ -58,19 +75,14 @@ public class FacadeServiceProxy implements InvocationHandler {
             methodMap.putIfAbsent(method, getActualMethod(method, underlyingClass));
             m = methodMap.get(method);
         }
-        try {
-            return m.invoke(underlyingObject, args);
-        } catch (InvocationTargetException e ) {
-            // to reduce unnecessary nesting.
-            throw e.getCause();
-        }
+        return m;
     }
     /**
      * @param method
      * @param underlyingClass
      * @return method or the underlyingClass's method with the same signatures.
      */
-    private Method getActualMethod(Method method, Class<?> underlyingClass) {
+    protected Method getActualMethod(Method method, Class<?> underlyingClass) {
         Method m;
         if ( method.getDeclaringClass().isAssignableFrom(underlyingClass) ) {
             m = method;
