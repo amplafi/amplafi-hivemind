@@ -633,7 +633,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
                         }
                     }
                     if ( createdObject == null) {
-                        getLog().debug("Creating mock for specifically named service. Error messages are:\n"+errorMessages);
+                        getLog().warn("Creating mock for specifically named service. Error messages are:\n"+errorMessages);
                         createdObject = getThreadsMockByName(serviceId, serviceInterface);
                     }
                     break;
