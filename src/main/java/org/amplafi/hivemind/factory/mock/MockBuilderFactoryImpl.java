@@ -614,8 +614,6 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
                     } else if ( isMockable(serviceInterface)) {
                         // no such service supply a proxy (unless it is a java class)
                         createdObject = getThreadsMock(serviceInterface);
-                    } else {
-                        createdObject = null;
                     }
                     break;
                 case 2:
