@@ -43,6 +43,9 @@ public class FacadeServiceProxy implements InvocationHandler {
     @SuppressWarnings("unused")
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Object underlyingObject = getUnderlyingService();
+        if ( underlyingObject instanceof Throwable ) {
+            throw (Throwable) underlyingObject;
+        }
         // get fresh because the getUnderlyingService() method may be overridden by subclasses
         // that alter the class based on circumstances.
         Class<?> underlyingClass = underlyingObject.getClass();

@@ -698,7 +698,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
             try {
                 return createCoreServiceImplementation(delegate, factoryParameters);
             } catch (Exception e) {
-                return null;
+                return e;
             }
         }
 
