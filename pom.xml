@@ -15,7 +15,7 @@
     <name>Amplafi Hivemind</name>
     <description>Hivemind utilities used in tests as well as production code.</description>
 	<scm>
-		<developerConnection>scm:svn:${svn-base}/${artifactId}/trunk</developerConnection>
+		<developerConnection>scm:svn:${svn-base}/${project.artifactId}/trunk</developerConnection>
 	</scm>	
     <build>
         <plugins>
@@ -23,7 +23,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <configuration>
-                    <siteDirectory>${artifactId}/src/site</siteDirectory>
+                    <siteDirectory>${project.artifactId}/src/site</siteDirectory>
                 </configuration>
             </plugin>
         </plugins>
