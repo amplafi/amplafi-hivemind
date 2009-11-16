@@ -40,7 +40,6 @@ public class FacadeServiceProxy implements InvocationHandler {
         this.underlyingService = underlyingService;
     }
     @Override
-    @SuppressWarnings("unused")
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Object underlyingObject = getUnderlyingService();
         if ( underlyingObject instanceof Throwable ) {
