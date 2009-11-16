@@ -2,4 +2,5 @@
 <module id="amplafi.hivemind" version="0.0.1">
     <sub-module descriptor="amplafi.autowire.xml"/>
     <sub-module descriptor="amplafi.factory.xml"/>
+    <sub-module descriptor="amplafi.init.xml"/>
 </module>

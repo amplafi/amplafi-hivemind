@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<module id="amplafi.init" version="0.4.0">
+
+  <service-point id="AppInitializer" interface="org.amplafi.hivemind.services.AppInitializer">
+    
+    <invoke-factory service-id="hivemind.lib.ChainFactory">
+      <construct configuration-id="AppInitializers"/>
+    </invoke-factory>
+  </service-point>
+  
+  <configuration-point id="AppInitializers" schema-id="hivemind.lib.ChainContribution">  
+    An orderable list of AppInitializer services.
+  </configuration-point>  
+      
+</module>
