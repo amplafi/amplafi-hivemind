@@ -23,6 +23,8 @@ import java.util.List;
 import org.amplafi.hivemind.annotations.InjectService;
 import org.amplafi.hivemind.annotations.NotService;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hivemind.internal.Module;
 import org.apache.hivemind.util.PropertyAdaptor;
 
@@ -87,20 +89,30 @@ public class ServicesSetterImpl implements ServicesSetter {
                 continue;
             }
 
-            String propertyAccessorMethodName = "set"+StringUtils.capitalize(type.getPropertyName());
             // check to see if we have a service to offer before bothering
             // to checking if the property can be set. This avoids triggering
             // actions caused by calling the get/setters.
-            Object srv = null;
-            try {
-                InjectService service = findServiceAnnotation(obj, propertyAccessorMethodName, propertyType);
-                if ( service == null ) {
-                    propertyAccessorMethodName = "get"+StringUtils.capitalize(type.getPropertyName());
-                    service = findServiceAnnotation(obj, propertyAccessorMethodName);
-                }
-                if ( service == null && (propertyType == boolean.class || propertyType == Boolean.class)) {
-                    propertyAccessorMethodName = "is"+StringUtils.capitalize(type.getPropertyName());
-                    service = findServiceAnnotation(obj, propertyAccessorMethodName);
+            Object srv;
+            if ( type.getPropertyType() == Log.class) {
+                // log is special.
+                srv = LogFactory.getLog(obj.getClass());
+            } else {
+                srv = null;
+                String propertyAccessorMethodName = "set"+StringUtils.capitalize(type.getPropertyName());
+                InjectService service;
+                try {
+                    service = findServiceAnnotation(obj, propertyAccessorMethodName, propertyType);
+                    if ( service == null ) {
+                        propertyAccessorMethodName = "get"+StringUtils.capitalize(type.getPropertyName());
+                        service = findServiceAnnotation(obj, propertyAccessorMethodName);
+                    }
+                    if ( service == null && (propertyType == boolean.class || propertyType == Boolean.class)) {
+                        propertyAccessorMethodName = "is"+StringUtils.capitalize(type.getPropertyName());
+                        service = findServiceAnnotation(obj, propertyAccessorMethodName);
+                    }
+                } catch(DontInjectException e) {
+                    // do nothing
+                    continue;
                 }
 
                 if ( service != null ) {
@@ -123,20 +135,17 @@ public class ServicesSetterImpl implements ServicesSetter {
                         }
                     }
                 }
-
                 if ( srv == null) {
                     try {
                         srv = module.getService(propertyType);
                     } catch (Exception e) {
                     }
                 }
-                // Doing the read check last avoids
-                // triggering problems caused by lazy initialization and read-only properties.
-                if ( srv != null && type.read(obj) == null) {
-                    type.write(obj, srv);
-                }
-            } catch(DontInjectException e) {
-                // do nothing
+            }
+            // Doing the read check last avoids
+            // triggering problems caused by lazy initialization and read-only properties.
+            if ( srv != null && type.read(obj) == null) {
+                type.write(obj, srv);
             }
         }
     }
