@@ -31,6 +31,11 @@ public class ServiceTranslator implements Translator
      * Returns null if the input is null or empty. Returns the service with the given name
      * otherwise. Will log an error and return null if an exception is thrown. If the input value is
      * not qualified, the contributing module's id is added as a prefix.
+     * @param contributingModule
+     * @param propertyType
+     * @param inputValue
+     * @param location
+     * @return the service
      */
     public Object translate(Module contributingModule, Class propertyType, String inputValue,
             Location location)
