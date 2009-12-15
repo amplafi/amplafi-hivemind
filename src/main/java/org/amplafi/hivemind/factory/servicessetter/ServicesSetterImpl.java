@@ -25,6 +25,7 @@ import org.amplafi.hivemind.annotations.NotService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hivemind.ApplicationRuntimeException;
 import org.apache.hivemind.internal.Module;
 import org.apache.hivemind.util.PropertyAdaptor;
 
@@ -145,7 +146,12 @@ public class ServicesSetterImpl implements ServicesSetter {
             // Doing the read check last avoids
             // triggering problems caused by lazy initialization and read-only properties.
             if ( srv != null && type.read(obj) == null) {
-                type.write(obj, srv);
+                if ( type.getPropertyType().isAssignableFrom(srv.getClass())) {
+                    type.write(obj, srv);
+                } else {
+                    throw new ApplicationRuntimeException("Trying to set property "+obj.getClass()+"."+prop+" however, the property type="+type.getPropertyType()+
+                        " is not a superclass or same class as "+srv.getClass()+". srv="+srv);
+                }
             }
         }
     }
