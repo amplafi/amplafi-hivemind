@@ -13,6 +13,7 @@
  */
 package org.amplafi.hivemind.factory.servicessetter;
 
+import org.apache.commons.logging.Log;
 import org.apache.hivemind.ServiceImplementationFactory;
 import org.apache.hivemind.ServiceImplementationFactoryParameters;
 
@@ -22,12 +23,28 @@ import org.apache.hivemind.ServiceImplementationFactoryParameters;
  * @author andyhot
  */
 public class ServicesSetterFactory implements ServiceImplementationFactory {
+    private Log log;
 
     public Object createCoreServiceImplementation(
             ServiceImplementationFactoryParameters params) {
-        ServicesSetter ss = new ServicesSetterImpl();
+        ServicesSetterImpl ss = new ServicesSetterImpl();
         ss.setModule(params.getInvokingModule());
+        ss.setLog(getLog());
         return ss;
+    }
+
+    /**
+     * @param log the log to set
+     */
+    public void setLog(Log log) {
+        this.log = log;
+    }
+
+    /**
+     * @return the log
+     */
+    public Log getLog() {
+        return log;
     }
 
 }

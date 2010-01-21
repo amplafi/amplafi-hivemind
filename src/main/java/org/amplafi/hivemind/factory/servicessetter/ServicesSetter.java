@@ -13,9 +13,6 @@
  */
 package org.amplafi.hivemind.factory.servicessetter;
 
-
-import org.apache.hivemind.internal.Module;
-
 /**
  * Utility class that allows wiring up existing services (from a hivemind
  * registry) into a given object.
@@ -23,7 +20,6 @@ import org.apache.hivemind.internal.Module;
  * @author andyhot
  */
 public interface ServicesSetter {
-    public void setModule(Module module);
 
     public void wire(Object obj);
 

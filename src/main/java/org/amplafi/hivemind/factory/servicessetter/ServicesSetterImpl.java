@@ -39,6 +39,7 @@ import org.apache.hivemind.util.PropertyAdaptor;
 public class ServicesSetterImpl implements ServicesSetter {
 
     private Module module;
+    private Log log;
 
     public ServicesSetterImpl() {
     }
@@ -69,6 +70,8 @@ public class ServicesSetterImpl implements ServicesSetter {
         for(String exclude: excludedProperties) {
             props.remove(exclude);
         }
+        int wiredCount = 0;
+        getLog().debug(obj.getClass()+": autowiring "+props.size());
 
         for (String prop : props) {
             PropertyAdaptor type = getPropertyAdaptor(obj, prop);
@@ -148,12 +151,14 @@ public class ServicesSetterImpl implements ServicesSetter {
             if ( srv != null && type.read(obj) == null) {
                 if ( type.getPropertyType().isAssignableFrom(srv.getClass())) {
                     type.write(obj, srv);
+                    wiredCount++;
                 } else {
                     throw new ApplicationRuntimeException("Trying to set property "+obj.getClass()+"."+prop+" however, the property type="+type.getPropertyType()+
                         " is not a superclass or same class as "+srv.getClass()+". srv="+srv);
                 }
             }
         }
+        getLog().debug(obj.getClass()+": done autowiring. actual="+wiredCount);
     }
 
     /**
@@ -193,6 +198,19 @@ public class ServicesSetterImpl implements ServicesSetter {
 
         }
         return service;
+    }
+    /**
+     * @param log the log to set
+     */
+    public void setLog(Log log) {
+        this.log = log;
+    }
+
+    /**
+     * @return the log
+     */
+    public Log getLog() {
+        return log;
     }
     private class DontInjectException extends Exception {
 
