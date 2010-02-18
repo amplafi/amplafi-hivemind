@@ -81,7 +81,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
 
 
     public MockBuilderFactoryImpl() {
-        this(true);
+        this(false);
     }
 
     public MockBuilderFactoryImpl(boolean shareMocksAcrossThreads) {
