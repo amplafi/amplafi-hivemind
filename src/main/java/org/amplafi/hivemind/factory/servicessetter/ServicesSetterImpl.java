@@ -13,12 +13,16 @@
  */
 package org.amplafi.hivemind.factory.servicessetter;
 
+import static org.apache.commons.lang.StringUtils.*;
 import static org.apache.hivemind.util.PropertyUtils.*;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.amplafi.hivemind.annotations.InjectService;
 import org.amplafi.hivemind.annotations.NotService;
@@ -40,6 +44,11 @@ public class ServicesSetterImpl implements ServicesSetter {
 
     private Module module;
     private Log log;
+    /**
+     * Key is concatenation of class and the excluded method names.
+     */
+    private ConcurrentMap<Class<?>, Set<String>> cachedAlwaysExcludedMap = new ConcurrentHashMap<Class<?>, Set<String>>();
+    private ConcurrentMap<Class<?>, ConcurrentMap<String, String>> serviceMap = new ConcurrentHashMap<Class<?>, ConcurrentMap<String,String>>();
 
     public ServicesSetterImpl() {
     }
@@ -67,77 +76,102 @@ public class ServicesSetterImpl implements ServicesSetter {
             return;
         }
         List<String> props = getWriteableProperties(obj);
+        Set<String> alwaysExcludedCollection = cachedAlwaysExcludedMap.get(obj.getClass());
+
+        if ( alwaysExcludedCollection != null) {
+            props.removeAll(alwaysExcludedCollection);
+            if ( getLog().isDebugEnabled()) {
+                getLog().debug(obj.getClass()+": autowiring. Class has already been filtered down to "+props.size()+"properties. props={"+join(props, ",")+"}");
+            }
+        } else {
+            if ( getLog().isDebugEnabled()) {
+                getLog().debug(obj.getClass()+": autowiring for the first time. Class has at most "+props.size()+"properties. props={"+join(props, ",")+"}");
+            }
+            alwaysExcludedCollection = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+            cachedAlwaysExcludedMap.putIfAbsent(obj.getClass(), alwaysExcludedCollection);
+        }
         for(String exclude: excludedProperties) {
             props.remove(exclude);
         }
         int wiredCount = 0;
-        getLog().debug(obj.getClass()+": autowiring "+props.size());
 
         for (String prop : props) {
             PropertyAdaptor type = getPropertyAdaptor(obj, prop);
             Class propertyType = type.getPropertyType();
             if (propertyType.isPrimitive() || propertyType.isAnnotation() || propertyType.isArray() || propertyType.isEnum()) {
                 // and primitive types of course can't be injected!
+                alwaysExcludedCollection.add(prop);
                 continue;
             }
             if ( propertyType.getPackage().getName().startsWith("java")) {
                 // if it is a standard java class then lets exclude it.
+                alwaysExcludedCollection.add(prop);
                 continue;
             }
             // if it is not readable then, then we can't verify that
             // we are not overwriting non-null property.
             if ( !type.isReadable() || !type.isWritable()) {
+                alwaysExcludedCollection.add(prop);
                 continue;
             }
             if ( propertyType.getAnnotation(NotService.class) != null) {
+                alwaysExcludedCollection.add(prop);
                 continue;
             }
 
             // check to see if we have a service to offer before bothering
             // to checking if the property can be set. This avoids triggering
             // actions caused by calling the get/setters.
-            Object srv;
+            Object srv = null;
             if ( type.getPropertyType() == Log.class) {
                 // log is special.
                 srv = LogFactory.getLog(obj.getClass());
             } else {
-                srv = null;
-                String propertyAccessorMethodName = "set"+StringUtils.capitalize(type.getPropertyName());
-                InjectService service;
-                try {
-                    service = findServiceAnnotation(obj, propertyAccessorMethodName, propertyType);
-                    if ( service == null ) {
-                        propertyAccessorMethodName = "get"+StringUtils.capitalize(type.getPropertyName());
-                        service = findServiceAnnotation(obj, propertyAccessorMethodName);
-                    }
-                    if ( service == null && (propertyType == boolean.class || propertyType == Boolean.class)) {
-                        propertyAccessorMethodName = "is"+StringUtils.capitalize(type.getPropertyName());
-                        service = findServiceAnnotation(obj, propertyAccessorMethodName);
-                    }
-                } catch(DontInjectException e) {
-                    // do nothing
-                    continue;
+                ConcurrentMap<String, String> classServiceMap = serviceMap.get(obj.getClass());
+                if (classServiceMap == null) {
+                    serviceMap.putIfAbsent(obj.getClass(), new ConcurrentHashMap<String, String>());
+                    classServiceMap = serviceMap.get(obj.getClass());
                 }
+                String serviceName = classServiceMap.get(prop);
+                if ( serviceName == null) {
+                    InjectService service;
+                    try {
+                        service = findInjectService(obj, type);
+                    } catch(DontInjectException e) {
+                        // do nothing
+                        alwaysExcludedCollection.add(prop);
+                        continue;
+                    }
 
-                if ( service != null ) {
-                    String serviceName = service.value();
-                    if ( StringUtils.isNotBlank(serviceName)) {
-                        for (String attempt: new String[] {
+                    if ( service != null ) {
+                        serviceName = service.value();
+                        if ( StringUtils.isNotBlank(serviceName)) {
+                            for (String attempt: new String[] {
                                 serviceName,
                                 serviceName +'.' +type.getPropertyName(),
                                 serviceName +'.' +StringUtils.capitalize(type.getPropertyName())
-                        }) {
-                            try {
-                                srv = module.getService(attempt, propertyType);
-                                if ( srv != null ) {
-                                    serviceName = attempt;
-                                    break;
+                            }) {
+                                try {
+                                    srv = module.getService(attempt, propertyType);
+                                    if ( srv != null ) {
+                                        serviceName = attempt;
+                                        break;
+                                    }
+                                }catch(Exception e) {
+                                    // oh well... not around.
                                 }
-                            }catch(Exception e) {
-                                // oh well... not around.
                             }
                         }
                     }
+                    if ( srv != null ) {
+                        classServiceMap.putIfAbsent(prop, serviceName);
+                    } else {
+                        // we looked but did not find... no need to look again.
+                        classServiceMap.putIfAbsent(prop, "");
+                    }
+                } else if ( !serviceName.isEmpty()){
+                    // we already found the service.
+                    srv = module.getService(serviceName, propertyType);
                 }
                 if ( srv == null) {
                     try {
@@ -146,19 +180,47 @@ public class ServicesSetterImpl implements ServicesSetter {
                     }
                 }
             }
-            // Doing the read check last avoids
-            // triggering problems caused by lazy initialization and read-only properties.
-            if ( srv != null && type.read(obj) == null) {
+            if (srv == null) {
+                alwaysExcludedCollection.add(prop);
+            } else if ( type.read(obj) == null) {
+                // Doing the read check last avoids
+                // triggering problems caused by lazy initialization and read-only properties.
                 if ( type.getPropertyType().isAssignableFrom(srv.getClass())) {
                     type.write(obj, srv);
                     wiredCount++;
                 } else {
+                    // this is probably an error so we do not just add to the exclude list.
                     throw new ApplicationRuntimeException("Trying to set property "+obj.getClass()+"."+prop+" however, the property type="+type.getPropertyType()+
                         " is not a superclass or same class as "+srv.getClass()+". srv="+srv);
                 }
             }
         }
-        getLog().debug(obj.getClass()+": done autowiring. actual="+wiredCount);
+        if ( getLog().isDebugEnabled()) {
+            getLog().debug(obj.getClass()+": done autowiring. actual number of properties wired="+wiredCount+" excluded properties="+alwaysExcludedCollection);
+        }
+    }
+
+    /**
+     * @param obj
+     * @param type
+     * @param propertyType
+     * @return
+     * @throws DontInjectException
+     */
+    private InjectService findInjectService(Object obj, PropertyAdaptor type) throws DontInjectException {
+        InjectService service;
+        Class<?> propertyType = type.getPropertyType();
+        String propertyAccessorMethodName = "set"+StringUtils.capitalize(type.getPropertyName());
+        service = findServiceAnnotation(obj, propertyAccessorMethodName, propertyType);
+        if ( service == null ) {
+            propertyAccessorMethodName = "get"+StringUtils.capitalize(type.getPropertyName());
+            service = findServiceAnnotation(obj, propertyAccessorMethodName);
+        }
+        if ( service == null && (propertyType == boolean.class || propertyType == Boolean.class)) {
+            propertyAccessorMethodName = "is"+StringUtils.capitalize(type.getPropertyName());
+            service = findServiceAnnotation(obj, propertyAccessorMethodName);
+        }
+        return service;
     }
 
     /**
