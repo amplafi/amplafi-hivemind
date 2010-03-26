@@ -333,9 +333,6 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
      * {@link #mockOverride} set, then mock.</li>
      * <li>If the service is in the explicit
      * {@link #dontMockOverride} set, then don't mock (unless on explicit Mock set).
-     * </li><li>
-     * if {@link #dontMockOverride} has values and this interfaceClass is not in that
-     * set then mock.
      * </li><li>if real service is null and mockByDefault is true then mock.
      * </li>
      * </ol>
@@ -351,10 +348,6 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
             underlyingObject = getThreadsMock(interfaceClass);
         } else if ( dontMockOverride.get().contains(interfaceClass)) {
             underlyingObject = realService;
-        } else if ( !dontMockOverride.get().isEmpty()){
-            // if dontMockOverride is not empty then everything else
-            // must be mocked.
-            underlyingObject = getThreadsMock(interfaceClass);
         } else if ( realService == null && mockByDefault){
             underlyingObject = getThreadsMock(interfaceClass);
         } else {
