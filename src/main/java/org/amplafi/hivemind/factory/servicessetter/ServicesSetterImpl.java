@@ -98,12 +98,7 @@ public class ServicesSetterImpl implements ServicesSetter {
         for (String prop : props) {
             PropertyAdaptor type = getPropertyAdaptor(obj, prop);
             Class propertyType = type.getPropertyType();
-            if (propertyType.isPrimitive() || propertyType.isAnnotation() || propertyType.isArray() || propertyType.isEnum()) {
-                // and primitive types of course can't be injected!
-                alwaysExcludedCollection.add(prop);
-                continue;
-            }
-            if ( propertyType.getPackage().getName().startsWith("java")) {
+            if ( !isWireableClass(propertyType)) {
                 // if it is a standard java class then lets exclude it.
                 alwaysExcludedCollection.add(prop);
                 continue;
@@ -114,11 +109,6 @@ public class ServicesSetterImpl implements ServicesSetter {
                 alwaysExcludedCollection.add(prop);
                 continue;
             }
-            if ( propertyType.getAnnotation(NotService.class) != null) {
-                alwaysExcludedCollection.add(prop);
-                continue;
-            }
-
             // check to see if we have a service to offer before bothering
             // to checking if the property can be set. This avoids triggering
             // actions caused by calling the get/setters.
@@ -197,6 +187,26 @@ public class ServicesSetterImpl implements ServicesSetter {
         }
         if ( getLog().isDebugEnabled()) {
             getLog().debug(obj.getClass()+": done autowiring. actual number of properties wired="+wiredCount+" excluded properties="+alwaysExcludedCollection);
+        }
+    }
+
+    /**
+     * @param propertyType
+     * @return true class can be wired up as a service
+     */
+    public boolean isWireableClass(Class<?> propertyType) {
+        if(
+            // exclude primitives or other things that are not mockable in any form
+            propertyType.isPrimitive() || propertyType.isAnnotation() || propertyType.isArray() || propertyType.isEnum()
+            // generated classes
+            || propertyType.getCanonicalName() == null
+            // exclude java classes
+            || propertyType.getPackage().getName().startsWith("java") ) {
+            return false;
+        } else {
+            // exclude things that are explicitly labeled as not being injectable
+            NotService notService = propertyType.getAnnotation(NotService.class);
+            return notService == null;
         }
     }
 

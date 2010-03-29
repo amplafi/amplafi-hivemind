@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.amplafi.hivemind.annotations.NotService;
 import org.amplafi.hivemind.factory.ServiceTranslator;
 import org.amplafi.hivemind.factory.facade.FacadeServiceProxy;
+import org.amplafi.hivemind.factory.servicessetter.ServicesSetter;
 import org.amplafi.hivemind.util.SwitchableThreadLocal;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ClassUtils;
@@ -78,6 +79,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
     private SwitchableThreadLocal<Set<Class<?>>> mockOverride;
     private SwitchableThreadLocal<Set<Class<?>>> dontMockOverride;
     private Log log;
+    private ServicesSetter servicesSetter;
 
 
     public MockBuilderFactoryImpl() {
@@ -388,7 +390,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
      * BuilderFactory.
      * @see org.apache.hivemind.ServiceInterceptorFactory#createInterceptor(org.apache.hivemind.InterceptorStack, org.apache.hivemind.internal.Module, java.util.List)
      */
-    @SuppressWarnings({ "unused", "unchecked" })
+    @SuppressWarnings({ "unchecked" })
     public void createInterceptor(InterceptorStack stack, Module invokingModule, List parameters) {
         Log log = stack.getServiceLog();
 
@@ -414,12 +416,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
         if ( mock != null ) {
             return mock;
         }
-        IMocksControl mockControl = getMockControl();
-        try {
-            mock = mockControl.createMock(interfaceClass);
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("Need to program mock first for interface "+interfaceClass, e);
-        }
+        mock = createMock(interfaceClass);
         getMockMap().put(interfaceClass, mock);
         return mock;
     }
@@ -430,13 +427,26 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
         if ( mock != null ) {
             return mock;
         }
+        mock = createMock(interfaceClass);
+        map.put(serviceId, mock);
+        return mock;
+    }
+
+    /**
+     * @param <T>
+     * @param interfaceClass
+     * @param mock
+     * @return
+     */
+    private <T> T createMock(Class<T> interfaceClass) {
         IMocksControl mockControl = getMockControl();
+        T mock;
         try {
+            getLog().debug("Creating mock for "+interfaceClass);
             mock = mockControl.createMock(interfaceClass);
         } catch (IllegalStateException e) {
             throw new IllegalStateException("Need to program mock first for interface "+interfaceClass, e);
         }
-        map.put(serviceId, mock);
         return mock;
     }
     /**
@@ -457,16 +467,7 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
      * or is labeled with the {@link NotService} annotation.
      */
     private boolean isMockable(Class<?> serviceInterface) {
-        if ( !serviceInterface.isAnnotationPresent(NotService.class)) {
-            return serviceInterface.getCanonicalName() != null
-                && !serviceInterface.getCanonicalName().startsWith("java")
-                && !serviceInterface.isPrimitive()
-                && !serviceInterface.isArray()
-                && !serviceInterface.isEnum()
-                && !serviceInterface.isAnnotation();
-        } else {
-            return false;
-        }
+        return !getDontMockOverride().contains(serviceInterface) && getServicesSetter().isWireableClass(serviceInterface);
     }
     /**
      * Because of MockSwitcher the object that external tests have is not actually a mock in some cases.
@@ -515,6 +516,20 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
      */
     public Log getLog() {
         return log;
+    }
+
+    /**
+     * @param servicesSetter the servicesSetter to set
+     */
+    public void setServicesSetter(ServicesSetter servicesSetter) {
+        this.servicesSetter = servicesSetter;
+    }
+
+    /**
+     * @return the servicesSetter
+     */
+    public ServicesSetter getServicesSetter() {
+        return servicesSetter;
     }
 
     /**
@@ -589,14 +604,14 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
             this.realModule = realModule;
         }
 
-        @SuppressWarnings({ "unused", "unchecked" })
+        @SuppressWarnings({  "unchecked" })
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             Class serviceInterface;
             if ( "containsService".equals(method.getName())) {
                 // this module always has the service if the class in question is
                 // not a java class.
                 serviceInterface = (Class) args[0];
-                return isMockable(serviceInterface);
+                return isMockable(serviceInterface) || realModule.containsService(serviceInterface);
             } else if ( "getService".equals(method.getName())) {
                 Object createdObject = null;
                 switch( args.length ) {

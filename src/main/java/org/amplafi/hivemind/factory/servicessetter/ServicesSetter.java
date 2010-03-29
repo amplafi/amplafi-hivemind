@@ -47,4 +47,10 @@ public interface ServicesSetter {
      * @param excludedProperties
      */
     public void wire(Object obj, Iterable<String> excludedProperties);
+
+    /**
+     * @param propertyType
+     * @return true class can be wired up as a service
+     */
+    public boolean isWireableClass(Class<?> propertyType);
 }
