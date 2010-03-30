@@ -21,6 +21,7 @@ import java.util.List;
 import org.amplafi.hivemind.factory.mock.MockBuilderFactory;
 import org.amplafi.hivemind.factory.mock.MockBuilderFactoryImpl;
 import org.amplafi.hivemind.factory.mock.MockBuilderFactoryImpl.MockSwitcher;
+import org.amplafi.hivemind.factory.servicessetter.ServicesSetterImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hivemind.ClassResolver;
@@ -38,8 +39,7 @@ import static org.easymock.classextension.EasyMock.createControl;
 import static org.easymock.classextension.EasyMock.createMock;
 import static org.easymock.classextension.EasyMock.replay;
 import org.easymock.classextension.IMocksControl;
-import org.testng.Assert;
-import org.testng.annotations.DataProvider;
+import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 
 
@@ -47,31 +47,28 @@ import org.testng.annotations.Test;
  * tests the {@link MockBuilderFactory} to make sure that test function works well.
  * @author Patrick Moore
  */
-@Test
-public class TestMockBuilderFactory extends Assert {
-    @DataProvider(name="createMockFactory")
-    protected Object[][] createMockFactory() {
-        MockBuilderFactory factory = new MockBuilderFactoryImpl(false);
-        factory.setBuilderFactory(createMock(ServiceImplementationFactory.class));
-        return new Object[][] {
-                new Object[] { factory }
-        };
-    }
+public class TestMockBuilderFactory {
 
     /**
      * simple test to make sure that the {@link MockBuilderFactory} can function in a minimal
      * way as an interceptor.
-     * @param factory
      */
+    @Test
     @SuppressWarnings("unchecked")
-    @Test(dataProvider="createMockFactory")
-    public void testAsInterceptorFactory(MockBuilderFactory factory) {
-        // TODO have way to get testing logger.
+    public void testAsInterceptorFactory() {
         Log log = LogFactory.getLog(this.getClass());
+        MockBuilderFactoryImpl factory = new MockBuilderFactoryImpl(false);
+        factory.setLog(log);
+        ServicesSetterImpl servicesSetter = new ServicesSetterImpl();
+        factory.setServicesSetter(servicesSetter);
+        factory.setBuilderFactory(createMock(ServiceImplementationFactory.class));
+        // TODO have way to get testing logger.
         ServicePoint servicePoint = getServicePoint();
         final Class dependentServiceClass = ServiceImplementationFactory.class;
         List parameters = createMock(List.class);
         Module invokingModule = getModule(dependentServiceClass);
+        servicesSetter.setModule(invokingModule);
+        servicesSetter.setLog(log);
         ServicePoint someServicePoint = createMock(ServicePoint.class);
         expect(invokingModule.getServicePoint("someService")).andReturn(someServicePoint);
         replay(invokingModule, someServicePoint);

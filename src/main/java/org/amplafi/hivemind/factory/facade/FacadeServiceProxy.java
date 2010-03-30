@@ -112,7 +112,16 @@ public class FacadeServiceProxy implements InvocationHandler {
 
     public Object getUnderlyingService() {
         if ( this.underlyingService == null) {
-            this.underlyingService = createUnderlyingService();
+            Object service = createUnderlyingService();
+            if ( service instanceof RuntimeException) {
+                throw (RuntimeException)service;
+            } else if (service instanceof Error ) {
+                throw (Error)service;
+            } else if (service instanceof Throwable) {
+                throw new RuntimeException((Throwable)service);
+            } else {
+                this.underlyingService = service;
+            }
         }
         return underlyingService;
     }
