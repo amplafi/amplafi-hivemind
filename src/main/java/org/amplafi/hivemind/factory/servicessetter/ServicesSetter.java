@@ -14,8 +14,10 @@
 package org.amplafi.hivemind.factory.servicessetter;
 
 /**
- * Utility class that allows wiring up existing services (from a hivemind
+ * Utility class that allows wiring up existing services (from a dependency injection framework such as hivemind
  * registry) into a given object.
+ *
+ * TODO: move to sworddance project.
  *
  * @author andyhot
  */
