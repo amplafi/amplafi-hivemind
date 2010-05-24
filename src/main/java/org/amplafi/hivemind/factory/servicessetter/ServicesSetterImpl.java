@@ -232,6 +232,13 @@ public class ServicesSetterImpl implements ServicesSetter {
         }
         return service;
     }
+    private NotService findNotService(Method m) throws DontInjectException {
+        NotService notService = m.getAnnotation(NotService.class);
+        if ( notService != null  ) {
+            throw new DontInjectException();
+        }
+        return notService;
+    }
 
     /**
      * @param obj
@@ -246,17 +253,13 @@ public class ServicesSetterImpl implements ServicesSetter {
 
         try {
             Method m = obj.getClass().getMethod(propertyAccessorMethodName, propertyType);
-            if ( m.getAnnotation(NotService.class) != null ) {
-                throw new DontInjectException();
-            }
+            findNotService(m);
             service = m.getAnnotation(InjectService.class);
             if ( service == null ) {
                 for(Class<?> cls: obj.getClass().getInterfaces()) {
                     try {
                         m = cls.getMethod(propertyAccessorMethodName, propertyType);
-                        if ( m.getAnnotation(NotService.class) != null ) {
-                            throw new DontInjectException();
-                        }
+                        findNotService(m);
                         service = m.getAnnotation(InjectService.class);
                         if ( service != null ) {
                             break;
