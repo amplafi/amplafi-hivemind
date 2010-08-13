@@ -468,7 +468,8 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
      */
     private boolean isMockable(Class<?> serviceInterface) {
         Set<Class<?>> dontMockOverrideSet = getDontMockOverride();
-        return (dontMockOverrideSet == null || !dontMockOverrideSet.contains(serviceInterface)) && getServicesSetter().isWireableClass(serviceInterface);
+        return (dontMockOverrideSet == null || !dontMockOverrideSet.contains(serviceInterface)) 
+        	&& (getServicesSetter()==null || getServicesSetter().isWireableClass(serviceInterface));
     }
     /**
      * Because of MockSwitcher the object that external tests have is not actually a mock in some cases.
