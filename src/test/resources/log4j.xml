@@ -152,11 +152,6 @@
       <level value="INFO"/>
    </logger>
    
-   <!-- Limit Acegi -->
-   <logger name="org.acegisecurity">
-      <level value="INFO"/>
-   </logger>
-   
    <!-- Limit Jetty -->
    <logger name="org.mortbay">
       <level value="INFO"/>
