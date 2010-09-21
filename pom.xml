@@ -17,17 +17,6 @@
 	<scm>
 		<developerConnection>scm:svn:${svn-base}/${project.artifactId}/trunk</developerConnection>
 	</scm>	
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <configuration>
-                    <siteDirectory>${project.artifactId}/src/site</siteDirectory>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
