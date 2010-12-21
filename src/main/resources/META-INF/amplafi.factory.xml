@@ -23,10 +23,16 @@
             <construct class="org.amplafi.hivemind.factory.TranslatorObjectProviderAdaptor"/>
         </invoke-factory>
     </service-point>
+    <service-point id="NullProvider" interface="org.apache.hivemind.service.ObjectProvider">
+        Allows inserting a null object.
+        <invoke-factory>
+            <construct class="org.amplafi.hivemind.factory.NullProvider"/>
+        </invoke-factory>
+    </service-point>    
     <contribution configuration-id="hivemind.ObjectProviders">
         <provider prefix="translator" service-id="TranslatorProvider"/>
+        <provider prefix="null" service-id="NullProvider"/>
     </contribution>
-    
     
     <schema id="servicelist">
         <element name="service">
