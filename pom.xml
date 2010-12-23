@@ -14,9 +14,9 @@
     <packaging>jar</packaging>
     <name>Amplafi Hivemind</name>
     <description>Hivemind utilities used in tests as well as production code.</description>
-	<scm>
-		<developerConnection>scm:svn:${svn-base}/${project.artifactId}/trunk</developerConnection>
-	</scm>	
+    <scm>
+        <developerConnection>scm:git:${github-base}${project.artifactId}.git</developerConnection>
+    </scm>    
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
