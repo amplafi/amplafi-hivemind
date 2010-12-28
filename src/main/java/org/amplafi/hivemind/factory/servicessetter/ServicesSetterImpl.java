@@ -13,9 +13,6 @@
  */
 package org.amplafi.hivemind.factory.servicessetter;
 
-import static org.apache.commons.lang.StringUtils.*;
-import static org.apache.hivemind.util.PropertyUtils.*;
-
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,12 +23,16 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.amplafi.hivemind.annotations.InjectService;
 import org.amplafi.hivemind.annotations.NotService;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hivemind.ApplicationRuntimeException;
 import org.apache.hivemind.internal.Module;
 import org.apache.hivemind.util.PropertyAdaptor;
+
+import static org.apache.commons.lang.StringUtils.*;
+import static org.apache.hivemind.util.PropertyUtils.*;
 
 
 /**
@@ -89,6 +90,7 @@ public class ServicesSetterImpl implements ServicesSetter {
             }
             alwaysExcludedCollection = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
             cachedAlwaysExcludedMap.putIfAbsent(obj.getClass(), alwaysExcludedCollection);
+            alwaysExcludedCollection = cachedAlwaysExcludedMap.get(obj.getClass());
         }
         for(String exclude: excludedProperties) {
             props.remove(exclude);
@@ -287,7 +289,7 @@ public class ServicesSetterImpl implements ServicesSetter {
     public Log getLog() {
         return log;
     }
-    private class DontInjectException extends Exception {
+    private static class DontInjectException extends Exception {
 
     }
 }

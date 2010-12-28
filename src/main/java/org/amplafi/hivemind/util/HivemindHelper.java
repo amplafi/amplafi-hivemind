@@ -237,7 +237,7 @@ public final class HivemindHelper {
      *
      * @author Patrick Moore
      */
-    private class ErrorMsg {
+    private static class ErrorMsg {
 
         @SuppressWarnings("unused")
         private Location location;
