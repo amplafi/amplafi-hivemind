@@ -24,7 +24,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.hivemind.ClassResolver;
-import org.apache.hivemind.ErrorHandler;
 import org.apache.hivemind.Location;
 import org.apache.hivemind.ModuleDescriptorProvider;
 import org.apache.hivemind.Registry;
@@ -213,8 +212,7 @@ public final class HivemindHelper {
      *
      * @author Patrick Moore
      */
-    private class QuietErrorHandler extends DefaultErrorHandler implements
-            ErrorHandler {
+    private static class QuietErrorHandler extends DefaultErrorHandler {
         private List<ErrorMsg> errorMsgs = new CopyOnWriteArrayList<ErrorMsg>();
 
         @Override
