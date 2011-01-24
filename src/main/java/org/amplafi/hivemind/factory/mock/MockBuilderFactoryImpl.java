@@ -346,7 +346,8 @@ public class MockBuilderFactoryImpl implements MockBuilderFactory {
      */
     <T> T getServiceToUse(Class<? extends T> interfaceClass, T realService, boolean mockByDefault) {
         T underlyingObject;
-        if ( mockOverride.get().contains(interfaceClass) ) {
+        Set<Class<?>> mockoverrideForThread = mockOverride.get();
+		if ( mockoverrideForThread.contains(interfaceClass) ) {
             underlyingObject = getThreadsMock(interfaceClass);
         } else if ( dontMockOverride.get().contains(interfaceClass)) {
             underlyingObject = realService;
