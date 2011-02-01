@@ -137,7 +137,7 @@ public class ServicesSetterImpl implements ServicesSetter {
 
                     if ( service != null ) {
                         serviceName = service.value();
-                        if ( StringUtils.isNotBlank(serviceName)) {
+                        if ( isNotBlank(serviceName)) {
                             for (String attempt: new String[] {
                                 serviceName,
                                 serviceName +'.' +type.getPropertyName(),
