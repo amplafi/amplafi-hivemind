@@ -129,7 +129,7 @@ public interface MockBuilderFactory
      *
      * @see org.apache.hivemind.ServiceInterceptorFactory#createInterceptor(org.apache.hivemind.InterceptorStack,org.apache.hivemind.internal.Module,java.util.List)
      */
-    public void createInterceptor(InterceptorStack stack, Module invokingModule, List<?> parameters);
+    public void createInterceptor(InterceptorStack stack, Module invokingModule, List parameters);
 
     /**
      * used to get the mock objects so they can be programmed.
