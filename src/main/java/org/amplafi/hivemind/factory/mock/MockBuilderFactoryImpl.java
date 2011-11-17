@@ -31,8 +31,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.amplafi.hivemind.annotations.NotService;
 import org.amplafi.hivemind.factory.ServiceTranslator;
 import org.amplafi.hivemind.factory.facade.FacadeServiceProxy;
-import org.amplafi.hivemind.factory.servicessetter.ServicesSetter;
 import org.amplafi.hivemind.util.SwitchableThreadLocal;
+
+import com.sworddance.core.ServicesSetter;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.logging.Log;

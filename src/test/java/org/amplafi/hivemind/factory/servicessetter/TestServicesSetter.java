@@ -16,8 +16,10 @@ package org.amplafi.hivemind.factory.servicessetter;
 import static org.easymock.EasyMock.*;
 import static org.easymock.classextension.EasyMock.*;
 
-import org.amplafi.hivemind.factory.servicessetter.ServicesSetter;
 import org.amplafi.hivemind.util.HivemindHelper;
+
+import com.sworddance.core.ServicesSetter;
+
 import org.apache.hivemind.Registry;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;

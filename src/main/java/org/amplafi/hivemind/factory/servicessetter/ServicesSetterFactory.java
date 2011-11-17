@@ -13,6 +13,8 @@
  */
 package org.amplafi.hivemind.factory.servicessetter;
 
+import com.sworddance.core.ServicesSetter;
+
 import org.apache.commons.logging.Log;
 import org.apache.hivemind.ServiceImplementationFactory;
 import org.apache.hivemind.ServiceImplementationFactoryParameters;

@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentMap;
 import org.amplafi.hivemind.annotations.InjectService;
 import org.amplafi.hivemind.annotations.NotService;
 
+import com.sworddance.core.ServicesSetter;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -69,7 +71,7 @@ public class ServicesSetterImpl implements ServicesSetter {
 
     /**
      *
-     * @see org.amplafi.hivemind.factory.servicessetter.ServicesSetter#wire(java.lang.Object, java.lang.Iterable)
+     * @see com.sworddance.core.ServicesSetter#wire(java.lang.Object, java.lang.Iterable)
      */
     @SuppressWarnings("unchecked")
     public void wire(Object obj, Iterable<String> excludedProperties) {

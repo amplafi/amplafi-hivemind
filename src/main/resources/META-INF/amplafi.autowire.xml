@@ -6,7 +6,7 @@
         </invoke-factory>
     </service-point>     
     
-    <service-point id="ServicesSetter" interface="org.amplafi.hivemind.factory.servicessetter.ServicesSetter">
+    <service-point id="ServicesSetter" interface="com.sworddance.core.ServicesSetter">
           Helps wiring hivemind services in simple (unmanaged) objects.
         <invoke-factory service-id="ServicesSetterFactory" />
     </service-point>      
