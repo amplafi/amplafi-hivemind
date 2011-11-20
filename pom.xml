@@ -54,11 +54,13 @@
         <dependency>
             <groupId>org.amplafi</groupId>
             <artifactId>amplafi-sworddance</artifactId>
+            <version>${amplafi-sworddance-build}</version>
         </dependency>
         <dependency>
             <groupId>org.amplafi</groupId>
             <artifactId>amplafi-sworddance</artifactId>
             <classifier>tests</classifier>
+            <version>${amplafi-sworddance-build}</version>
             <scope>test</scope>
         </dependency>        
         <dependency>
