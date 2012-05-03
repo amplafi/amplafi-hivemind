@@ -194,8 +194,8 @@ public class ServicesSetterImpl implements ServicesSetter {
         try {
             return (SC) this.module.getService(serviceId, serviceClass);
         } catch(Exception e) {
-            // oh well... not around.
-            return null;
+        	getLog().error(e);
+        	return null;
         }
     }
 
