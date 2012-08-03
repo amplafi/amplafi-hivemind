@@ -37,7 +37,7 @@ import static org.apache.hivemind.util.PropertyUtils.*;
 /**
  * Utility class that allows wiring up existing services (from a hivemind
  * registry) into a given object.
- * 
+ *
  * @author andyhot
  */
 public class ServicesSetterImpl implements ServicesSetter {
@@ -53,6 +53,10 @@ public class ServicesSetterImpl implements ServicesSetter {
 
     private ConcurrentMap<Class<?>, ConcurrentMap<String, String>> serviceMap = new ConcurrentHashMap<Class<?>, ConcurrentMap<String, String>>();
 
+    /**
+     * Used to record classes that have not been found by the property type to avoid repeated attempts that will fail.
+     */
+    private ConcurrentMap<Class<?>, Exception> noServiceForType = new ConcurrentHashMap<>();
     public ServicesSetterImpl() {
     }
 
@@ -60,11 +64,13 @@ public class ServicesSetterImpl implements ServicesSetter {
         this.module = module;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public void wire(Object obj) {
         wire(obj, Collections.EMPTY_LIST);
     }
 
+    @Override
     public void wire(Object obj, String... excludedProperties) {
         wire(obj, Arrays.asList(excludedProperties));
     }
@@ -72,6 +78,7 @@ public class ServicesSetterImpl implements ServicesSetter {
     /**
      * @see com.sworddance.core.ServicesSetter#wire(java.lang.Object, java.lang.Iterable)
      */
+    @Override
     @SuppressWarnings("unchecked")
     public void wire(Object obj, Iterable<String> excludedProperties) {
         if(obj == null) {
@@ -158,10 +165,12 @@ public class ServicesSetterImpl implements ServicesSetter {
                     // we already found the service.
                     srv = getService(serviceName, propertyType);
                 }
-                if(srv == null) {
+                if(srv == null && !noServiceForType.containsKey(propertyType)) {
                     try {
                         srv = this.module.getService(propertyType);
                     } catch(Exception e) {
+                        noServiceForType.put(propertyType, e);
+                        getLog().debug("Look up of class "+propertyType + " failed. The failure is caused if there is not exactly 1 service implementing the class. Further searches by this property class will be ignored.");
                     }
                 }
             }
@@ -190,6 +199,7 @@ public class ServicesSetterImpl implements ServicesSetter {
      * @param serviceClass
      * @return
      */
+    @Override
     public <SC> SC getService(String serviceId, Class serviceClass) {
         try {
             return (SC) this.module.getService(serviceId, serviceClass);
@@ -203,6 +213,7 @@ public class ServicesSetterImpl implements ServicesSetter {
      * @param propertyType
      * @return true class can be wired up as a service
      */
+    @Override
     public boolean isWireableClass(Class<?> propertyType) {
         if(
         // exclude primitives or other things that are not mockable in any form
