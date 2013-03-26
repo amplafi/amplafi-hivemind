@@ -14,7 +14,6 @@
 package org.amplafi.hivemind.factory.servicessetter;
 
 import static org.easymock.EasyMock.*;
-import static org.easymock.classextension.EasyMock.*;
 
 import org.amplafi.hivemind.util.HivemindHelper;
 

@@ -35,10 +35,10 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.getCurrentArguments;
 import static org.easymock.EasyMock.isA;
 import org.easymock.IAnswer;
-import static org.easymock.classextension.EasyMock.createControl;
-import static org.easymock.classextension.EasyMock.createMock;
-import static org.easymock.classextension.EasyMock.replay;
-import org.easymock.classextension.IMocksControl;
+import static org.easymock.EasyMock.createControl;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.replay;
+import org.easymock.IMocksControl;
 import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 

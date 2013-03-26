@@ -28,10 +28,6 @@
             <artifactId>hivemind</artifactId>
         </dependency>
         <dependency>
-            <groupId>hivemind</groupId>
-            <artifactId>hivemind-lib</artifactId>
-        </dependency>        
-        <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
         </dependency>
@@ -42,14 +38,6 @@
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>oro</groupId>
-            <artifactId>oro</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javassist</groupId>
-            <artifactId>javassist</artifactId>
         </dependency>
         <dependency>
             <groupId>org.amplafi</groupId>
@@ -66,11 +54,6 @@
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymockclassextension</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

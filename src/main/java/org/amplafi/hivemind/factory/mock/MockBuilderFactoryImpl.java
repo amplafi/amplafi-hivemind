@@ -49,8 +49,8 @@ import org.apache.hivemind.internal.ServicePoint;
 import org.apache.hivemind.service.impl.LoggingUtils;
 import org.apache.hivemind.util.PropertyAdaptor;
 import org.apache.hivemind.util.PropertyUtils;
-import org.easymock.classextension.EasyMock;
-import org.easymock.classextension.IMocksControl;
+import org.easymock.EasyMock;
+import org.easymock.IMocksControl;
 
 
 /**
