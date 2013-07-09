@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.amplafi</groupId>
     <artifactId>amplafi-hivemind</artifactId>
-    <version>1.0.2</version>    
+    <version>1.0.3</version>    
     <parent>
         <groupId>org.amplafi</groupId>
         <artifactId>amplafi-opensource-parent</artifactId>
@@ -48,6 +48,7 @@
        		<!-- Indirect but needed.-->
             <groupId>oro</groupId>
             <artifactId>oro</artifactId>
+            <version>2.0.8</version>
         </dependency>
         <dependency>
 			<!-- Indirect but needed.-->
