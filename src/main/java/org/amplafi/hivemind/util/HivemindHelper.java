@@ -127,25 +127,23 @@ public final class HivemindHelper {
      * @return the registry existing or a newly created one.
      * @throws Exception
      */
-    public Registry getRegistry(String file, boolean shared) throws Exception {
+    public synchronized Registry getRegistry(String file, boolean shared) throws Exception {
             return getRegistry(file, shared, null, false);
     }
 
-    public Registry getRegistry(String file, boolean shared,
+    public synchronized Registry getRegistry(String file, boolean shared,
             String skipPattern, boolean skipFiles ) throws Exception {
         Registry registry = null;
-        // TODO: Always create a new registry for now.
-        // OOME if we have too many registries created.
-        shared = false;
+        String registryKey = file + skipPattern + skipFiles;
         if (shared) {
-            registry = registries.get(file);
+            registry = registries.get(registryKey);
         }
 
         if (registry == null) {
             registry = buildFrameworkRegistry(skipPattern, skipFiles, file);
 
             if (shared) {
-                registries.put(file, registry);
+                registries.put(registryKey, registry);
             }
         }
 
